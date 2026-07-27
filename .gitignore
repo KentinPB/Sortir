@@ -1,4 +1,13 @@
+# ==========================================
+# MÉTADONNÉES
+# ==========================================
+# Created by https://www.toptal.com/developers/gitignore/api/symfony,phpstorm+all[cite: 13]
+# Edit at https://www.toptal.com/developers/gitignore?templates=symfony,phpstorm+all[cite: 13]
 
+
+# ==========================================
+# SYMFONY (Framework & Bundles)
+# ==========================================
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
@@ -12,12 +21,99 @@
 /vendor/
 ###< symfony/framework-bundle ###
 
-###> phpunit/phpunit ###
-/phpunit.xml
-/.phpunit.cache/
-###< phpunit/phpunit ###
-
 ###> symfony/asset-mapper ###
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+# Anciennes structures, logs et paramètres Symfony
+/app/cache/*
+/app/logs/*
+!app/cache/.gitkeep
+!app/logs/.gitkeep
+/app/spool/*
+/var/cache/*
+/var/logs/*
+/var/sessions/*
+!var/cache/.gitkeep
+!var/logs/.gitkeep
+!var/sessions/.gitkeep
+/var/log/*
+!var/log/.gitkeep
+/app/config/parameters.yml
+/app/config/parameters.ini
+/app/bootstrap.php.cache
+/var/bootstrap.php.cache
+/bin/*
+!bin/console
+!bin/symfony_requirements
+/web/bundles/
+/web/uploads/
+/web/css/
+/web/js/
+**/Entity/*~
+/.web-server-pid
+
+
+# ==========================================
+# PHPUNIT (Tests)
+# ==========================================
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###
+/app/phpunit.xml
+
+
+# ==========================================
+# DÉPENDANCES ET BUILD
+# ==========================================
+/build/
+/composer.phar
+
+
+# ==========================================
+# PHPSTORM / IDE
+# ==========================================
+### PhpStorm+all ###
+# User-specific stuff
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/**/aws.xml
+.idea/**/contentModel.xml
+
+# Sensitive or high-churn files
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+.idea/**/gradle.xml
+.idea/**/libraries
+.idea/**/mongoSettings.xml
+.idea/httpRequests
+.idea/caches/build_file_checksums.ser
+
+# Plugins, CMake & Divers
+cmake-build-*/
+*.iws
+out/
+.idea_modules/
+atlassian-ide-plugin.xml
+.idea/replstate.xml
+.idea/sonarlint/
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+### PhpStorm+all Patch ###
+# Ignore everything except shared code styles and run configurations
+.idea/*
+!.idea/codeStyles
+!.idea/runConfigurations
