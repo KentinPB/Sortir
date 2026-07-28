@@ -1,10 +1,85 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Créer une sortie - Sortir.com{% endblock %}
+
 {% block body %}
+    <div class="card card-form shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h4 mb-0 fw-bold">Créer une sortie</h2>
+        </div>
 
+        <div class="card-body">
+            {{ form_start(sortieForm) }}
+
+            <div class="row">
+                {# Colonne de gauche : Informations principales de la sortie #}
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_row(sortieForm.nom) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(sortieForm.dateHeureDebut) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(sortieForm.dateLimiteInscription) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(sortieForm.nbInscriptionsMax) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(sortieForm.duree) }}
+                    </div>
+                </div>
+
+                {# Colonne de droite : Campus et détails du Lieu (Maquette) #}
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form_row(sortieForm.siteOrganisateur) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(sortieForm.lieu) }}
+                    </div>
+
+                    {# Sections additionnelles liées au Lieu #}
+                    <div class="mb-3">
+                        <label class="form-label" for="lieu-rue">Rue</label>
+                        <input type="text" id="lieu-rue" class="form-control bg-light" readonly placeholder="Sélectionnez un lieu">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="lieu-code-postal">Code postal</label>
+                        <input type="text" id="lieu-code-postal" class="form-control bg-light" readonly placeholder="Sélectionnez un lieu">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="lieu-lat-lng">Latitude / Longitude</label>
+                        <input type="text" id="lieu-lat-lng" class="form-control bg-light" readonly placeholder="Sélectionnez un lieu">
+                    </div>
+                </div>
+            </div>
+
+            {# Description sur toute la largeur #}
+            <div class="mb-4">
+                {{ form_row(sortieForm.infoSortie) }}
+            </div>
+
+            <hr class="my-4">
+
+            {# Boutons d'action #}
+            <div class="row g-2 justify-content-end">
+                <div class="col-md-3">
+                    {{ form_widget(sortieForm.enregistrer) }}
+                </div>
+                <div class="col-md-3">
+                    {{ form_widget(sortieForm.publier) }}
+                </div>
+                <div class="col-md-3">
+                    {# todo: changer le chemin #}
+                    <a href="#" class="btn btn-outline-secondary w-100">Retour à la liste</a>
+                </div>
+            </div>
+
+            {{ form_end(sortieForm) }}
+        </div>
+    </div>
 {% endblock %}
-
-{% block title %}
-
-{% endblock %}
-

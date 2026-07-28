@@ -62,6 +62,7 @@ class Sortie
     public function __construct()
     {
         $this->participants = new ArrayCollection();
+        $this->motifAnnulation = ''; // Valeur par défaut pour éviter l'erreur NOT NULL
     }
 
     public function getId(): ?int
