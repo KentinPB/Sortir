@@ -1,3 +1,35 @@
+/* Fond clair global pour le site */
 body {
-    background-color: skyblue;
+    background-color: #f8f9fa;
+}
+
+/* Style réutilisable pour toutes les cartes de formulaires */
+.card-form {
+    max-width: 800px;
+    margin: 2rem auto;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    background-color: #ffffff;
+}
+
+/* En-tête des cartes de formulaire */
+.card-form .card-header {
+    background-color: #0d6efd;
+    color: #ffffff;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+}
+
+/* Rembourrage interne */
+.card-form .card-body {
+    padding: 2rem;
+}
+
+/* Focus propre sur les champs */
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
 }

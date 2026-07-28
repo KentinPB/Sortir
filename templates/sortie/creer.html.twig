@@ -1,10 +1,63 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Créer une sortie - Sortir.com{% endblock %}
+
 {% block body %}
+    <div class="card card-form">
+        <div class="card-header">
+            <h2 class="h4 mb-0 fw-bold">Créer une nouvelle sortie</h2>
+        </div>
 
+        <div class="card-body">
+            {{ form_start(sortieForm) }}
+
+            {# Champ Nom #}
+            <div class="mb-3">
+                {{ form_row(sortieForm.nom) }}
+            </div>
+
+            {# Dates alignées sur 2 colonnes #}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form_row(sortieForm.dateHeureDebut) }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form_row(sortieForm.dateLimiteInscription) }}
+                </div>
+            </div>
+
+            {# Durée & Nombre de places alignés #}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form_row(sortieForm.duree) }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form_row(sortieForm.nbInscriptionsMax) }}
+                </div>
+            </div>
+
+            {# Lieu & Description #}
+            <div class="mb-3">
+                {{ form_row(sortieForm.lieu) }}
+            </div>
+
+            <div class="mb-4">
+                {{ form_row(sortieForm.infoSortie) }}
+            </div>
+
+            <hr class="my-4">
+
+            {# Boutons côte à côte #}
+            <div class="row g-2">
+                <div class="col-md-6">
+                    {{ form_widget(sortieForm.enregistrer) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_widget(sortieForm.publier) }}
+                </div>
+            </div>
+
+            {{ form_end(sortieForm) }}
+        </div>
+    </div>
 {% endblock %}
-
-{% block title %}
-
-{% endblock %}
-

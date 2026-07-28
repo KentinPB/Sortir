@@ -64,8 +64,8 @@ class SortieController extends AbstractController
             $entityManager->persist($sortie);
             $entityManager->flush();
 
-            // Redirection vers l'accueil ou la page de détail de la sortie
-            return $this->redirectToRoute('app_home'); // Remplacer par la route souhaitée
+            // Redirection temporaire vers le formulaire de création en attendant la page d'accueil
+            return $this->redirectToRoute('app_sortie_creer');
         }
 
         // 6. Affichage de la vue
