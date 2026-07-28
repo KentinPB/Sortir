@@ -1,14 +1,19 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Créer une sortie - Sortir.com{% endblock %}
+{% block title %}
+    {{ (isEdit ?? false) ? 'Modifier une sortie' : 'Créer une sortie' }} - Sortir.com
+{% endblock %}
 
 {% block body %}
     <div class="card card-form shadow-sm">
         <div class="card-header bg-primary text-white">
-            <h2 class="h4 mb-0 fw-bold">Créer une sortie</h2>
+            <h2 class="h4 mb-0 fw-bold">
+                {{ (isEdit ?? false) ? 'Modifier la sortie' : 'Créer une sortie' }}
+            </h2>
         </div>
 
         <div class="card-body">
+            {# 1. Début du formulaire principal #}
             {{ form_start(sortieForm) }}
 
             <div class="row">
@@ -31,7 +36,7 @@
                     </div>
                 </div>
 
-                {# Colonne de droite : Campus et détails du Lieu (Maquette) #}
+                {# Colonne de droite : Campus et détails du Lieu #}
                 <div class="col-md-6">
                     <div class="mb-3">
                         {{ form_row(sortieForm.siteOrganisateur) }}
@@ -40,46 +45,70 @@
                         {{ form_row(sortieForm.lieu) }}
                     </div>
 
-                    {# Sections additionnelles liées au Lieu #}
                     <div class="mb-3">
                         <label class="form-label" for="lieu-rue">Rue</label>
-                        <input type="text" id="lieu-rue" class="form-control bg-light" readonly placeholder="Sélectionnez un lieu">
+                        <input type="text" id="lieu-rue" class="form-control bg-light" readonly
+                               placeholder="Sélectionnez un lieu">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label" for="lieu-code-postal">Code postal</label>
-                        <input type="text" id="lieu-code-postal" class="form-control bg-light" readonly placeholder="Sélectionnez un lieu">
+                        <input type="text" id="lieu-code-postal" class="form-control bg-light" readonly
+                               placeholder="Sélectionnez un lieu">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label" for="lieu-lat-lng">Latitude / Longitude</label>
-                        <input type="text" id="lieu-lat-lng" class="form-control bg-light" readonly placeholder="Sélectionnez un lieu">
+                        <input type="text" id="lieu-lat-lng" class="form-control bg-light" readonly
+                               placeholder="Sélectionnez un lieu">
                     </div>
                 </div>
             </div>
 
-            {# Description sur toute la largeur #}
             <div class="mb-4">
                 {{ form_row(sortieForm.infoSortie) }}
             </div>
 
             <hr class="my-4">
 
-            {# Boutons d'action #}
-            <div class="row g-2 justify-content-end">
+            {# 2. Ligne unique pour tous les boutons d'action alignés #}
+            <div class="row g-2 justify-content-end align-items-center">
                 <div class="col-md-3">
                     {{ form_widget(sortieForm.enregistrer) }}
                 </div>
                 <div class="col-md-3">
                     {{ form_widget(sortieForm.publier) }}
                 </div>
+
+                {# Bouton Supprimer visuel (positionné sur la même ligne) #}
+                {% if isEdit ?? false and sortie is defined %}
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-danger w-100" onclick="if(confirm('Êtes-vous sûr de vouloir supprimer cette sortie ?')) { document.getElementById('delete-form').submit(); }">
+                            Supprimer la sortie
+                        </button>
+                    </div>
+                {% endif %}
+
                 <div class="col-md-3">
-                    {# todo: changer le chemin #}
                     <a href="#" class="btn btn-outline-secondary w-100">Retour à la liste</a>
                 </div>
             </div>
 
+            {# 3. Fin du formulaire principal #}
             {{ form_end(sortieForm) }}
+
+            {# 4. Vrai formulaire de suppression (totalement indépendant et caché) #}
+            {% if isEdit ?? false and sortie is defined %}
+                <form id="delete-form" method="post" action="{{ path('app_sortie_supprimer', {'id': sortie.id}) }}" style="display: none;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ sortie.id) }}">
+                </form>
+            {% endif %}
+
         </div>
     </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/lieu-details.js') }}" defer></script>
 {% endblock %}

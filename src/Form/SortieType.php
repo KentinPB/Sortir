@@ -37,7 +37,6 @@ class SortieType extends AbstractType
             ->add('nbInscriptionsMax', IntegerType::class, [
                 'label' => 'Nombre de places',
             ])
-            // AJOUT DU CHAMP CAMPUS (Site organisateur)
             ->add('siteOrganisateur', EntityType::class, [
                 'class' => Campus::class,
                 'choice_label' => 'nom', // Affiche le nom du campus
@@ -46,9 +45,17 @@ class SortieType extends AbstractType
             ])
             ->add('lieu', EntityType::class, [
                 'class' => Lieu::class,
-                'choice_label' => 'nom', // Affiche le nom du lieu
+                'choice_label' => 'nom',
                 'placeholder' => '--- Choisir un lieu ---',
                 'label' => 'Lieu',
+                'choice_attr' => function (Lieu $lieu) {
+                    return [
+                        'data-rue' => $lieu->getRue(),
+                        'data-code-postal' => method_exists($lieu, 'getCodePostal') ? $lieu->getCodePostal() : ($lieu->getVille()?->getCodePostal() ?? ''),
+                        'data-latitude' => $lieu->getLatitude(),
+                        'data-longitude' => $lieu->getLongitude(),
+                    ];
+                },
             ])
             ->add('infoSortie', TextareaType::class, [
                 'label' => 'Description et infos',
