@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Campus;
 use App\Entity\Lieu;
 use App\Entity\Sortie;
+use App\Repository\LieuRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
@@ -48,10 +49,14 @@ class SortieType extends AbstractType
                 'choice_label' => 'nom',
                 'placeholder' => '--- Choisir un lieu ---',
                 'label' => 'Lieu',
+                // 💡 On délègue la requête au LieuRepository
+                'query_builder' => function (LieuRepository $lieuRepository) {
+                    return $lieuRepository->createFindAllWithVilleQueryBuilder();
+                },
                 'choice_attr' => function (Lieu $lieu) {
                     return [
                         'data-rue' => $lieu->getRue(),
-                        'data-code-postal' => method_exists($lieu, 'getCodePostal') ? $lieu->getCodePostal() : ($lieu->getVille()?->getCodePostal() ?? ''),
+                        'data-code-postal' => $lieu->getVille()?->getCodePostal() ?? '',
                         'data-latitude' => $lieu->getLatitude(),
                         'data-longitude' => $lieu->getLongitude(),
                     ];

@@ -86,7 +86,7 @@ class SortieController extends AbstractController
     ): Response
     {
         // 1. Récupérer la sortie existante en base de données
-        $sortie = $sortieRepository->find($id);
+        $sortie = $sortieRepository->findOneWithRelations($id);
 
         if (!$sortie) {
             throw $this->createNotFoundException('Cette sortie n\'existe pas.');
