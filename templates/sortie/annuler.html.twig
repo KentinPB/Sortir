@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Annuler une sortie{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-danger text-white">
+                        <h2 class="h4 mb-0 fw-bold">Annuler une sortie</h2>
+                    </div>
+                    <div class="card-body">
+
+                        {# Affichage des informations en lecture seule #}
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label fw-bold">Nom de la sortie :</label>
+                            <div class="col-sm-8 col-form-label">{{ sortie.nom }}</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label fw-bold">Date et heure de la sortie :</label>
+                            <div class="col-sm-8 col-form-label">
+                                {{ sortie.dateHeureDebut|date('d/m/Y H:i') }}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label fw-bold">Campus :</label>
+                            <div class="col-sm-8 col-form-label">
+                                {{ sortie.siteOrganisateur ? sortie.siteOrganisateur.nom : '' }}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label fw-bold">Lieu :</label>
+                            <div class="col-sm-8 col-form-label">
+                                {% if sortie.lieu %}
+                                    {{ sortie.lieu.nom }} ({{ sortie.lieu.rue }})
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label fw-bold">Ville :</label>
+                            <div class="col-sm-8 col-form-label">
+                                {% if sortie.lieu and sortie.lieu.ville %}
+                                    {{ sortie.lieu.ville.codePostal }} {{ sortie.lieu.ville.nom }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {# Formulaire pour saisir le motif #}
+                        <form method="post" action="{{ path('app_sortie_annuler', {'id': sortie.id}) }}">
+                            <div class="mb-4">
+                                <label for="motif" class="form-label fw-bold text-danger">Motif d'annulation :</label>
+                                <textarea id="motif" name="motif" class="form-control" rows="4" required placeholder="Saisissez la raison de l'annulation..."></textarea>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="submit" class="btn btn-danger">Enregistrer</button>
+                                <a href="{{ path('app_sortie_creer') }}" class="btn btn-outline-secondary">Retour</a>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

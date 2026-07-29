@@ -25,7 +25,7 @@ class SortieController extends AbstractController
     ): Response
     {
         // -------------------------------------------------------------
-        // 1. MOCK DE L'UTILISATEUR (À remplacer plus tard par $this→getUser())
+        // 1. MOCK DE L'UTILISATEUR (À remplacer plus tard par $this->getUser())
         // On récupère arbitrairement le participant "Jeannine L." créé dans les fixtures
         // -------------------------------------------------------------
         $userMock = $participantRepository->findOneBy(['pseudo' => 'Jeannine L.']);
@@ -139,7 +139,6 @@ class SortieController extends AbstractController
     ): Response
     {
         // 1. Vérification des droits (Organisateur de la sortie ou Administrateur)
-        // (À décommenter et adapter selon la gestion de ton utilisateur connecté)
         /*
         if (!($sortie->getOrganisateur() === $this->getUser() || $this->isGranted('ROLE_ADMIN'))) {
             throw $this->createAccessDeniedException('Vous devez être l\'organisateur ou Administrateur pour supprimer cette sortie !');
@@ -159,5 +158,53 @@ class SortieController extends AbstractController
         // 3. Redirection vers la liste des sorties
         // TODO: Mettre la route vers la liste des sorties (ex: path('app_main_home'))
         return $this->redirectToRoute('app_sortie_creer');
+    }
+
+    #[Route('/annuler/{id}', name: 'annuler', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function annuler(
+        Sortie $sortie,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        EtatRepository $etatRepository
+    ): Response {
+        // 1. Vérification des règles métier : La sortie doit être Ouverte/Clôturée et ne doit pas être commencée
+        $libelleEtat = $sortie->getEtat()?->getLibelle();
+        if (!in_array($libelleEtat, ['Ouverte', 'Clôturée']) || $sortie->getDateHeureDebut() <= new \DateTime()) {
+            $this->addFlash('danger', 'Cette sortie ne peut pas être annulée.');
+            // TODO: Rediriger vers la liste des sorties (ex: path('app_main_home'))
+            return $this->redirectToRoute('app_sortie_creer');
+        }
+
+        // 2. Traitement lors de la soumission du formulaire d'annulation
+        if ($request->isMethod('POST')) {
+            $motif = trim((string) $request->request->get('motif'));
+
+            if (empty($motif)) {
+                $this->addFlash('danger', 'Le motif d\'annulation est obligatoire.');
+            } else {
+                $etatAnnulee = $etatRepository->findOneBy(['libelle' => 'Annulée']);
+
+                if (!$etatAnnulee) {
+                    $this->addFlash('danger', 'L\'état "Annulée" est introuvable en base de données.');
+                    // TODO: Rediriger vers la liste des sorties (ex: path('app_main_home'))
+                    return $this->redirectToRoute('app_sortie_creer');
+                }
+
+                // Affectation du motif et changement d'état
+                $sortie->setMotifAnnulation($motif);
+                $sortie->setEtat($etatAnnulee);
+
+                $entityManager->flush();
+
+                $this->addFlash('success', 'La sortie a bien été annulée.');
+
+                // TODO: Rediriger vers la liste des sorties (ex: path('app_main_home'))
+                return $this->redirectToRoute('app_sortie_creer');
+            }
+        }
+
+        return $this->render('sortie/annuler.html.twig', [
+            'sortie' => $sortie,
+        ]);
     }
 }
