@@ -91,7 +91,7 @@ class SortieController extends AbstractController
     ): Response
     {
         // 1. Récupérer la sortie existante en base de données
-        $sortie = $sortieRepository->findOneWithRelations($id);
+        $sortie = $sortieRepository->findOneForEdit($id);
 
         if (!$sortie) {
             throw $this->createNotFoundException('Cette sortie n\'existe pas.');
@@ -133,8 +133,8 @@ class SortieController extends AbstractController
 
     #[Route('/supprimer/{id}', name: 'supprimer', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function supprimer(
-        Sortie $sortie,
-        Request $request,
+        Sortie                 $sortie,
+        Request                $request,
         EntityManagerInterface $entityManager
     ): Response
     {
@@ -162,35 +162,43 @@ class SortieController extends AbstractController
 
     #[Route('/annuler/{id}', name: 'annuler', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function annuler(
-        Sortie $sortie,
-        Request $request,
+        int                    $id,
+        Request                $request,
         EntityManagerInterface $entityManager,
-        EtatRepository $etatRepository
-    ): Response {
-        // 1. Vérification des règles métier : La sortie doit être Ouverte/Clôturée et ne doit pas être commencée
+        EtatRepository         $etatRepository,
+        SortieRepository       $sortieRepository
+    ): Response
+    {
+        $sortie = $sortieRepository->findOneForCancel($id);
+
+        if (!$sortie) {
+            throw $this->createNotFoundException('Sortie introuvable.');
+        }
+
         $libelleEtat = $sortie->getEtat()?->getLibelle();
+
         if (!in_array($libelleEtat, ['Ouverte', 'Clôturée']) || $sortie->getDateHeureDebut() <= new \DateTime()) {
             $this->addFlash('danger', 'Cette sortie ne peut pas être annulée.');
-            // TODO: Rediriger vers la liste des sorties (ex: path('app_main_home'))
+
             return $this->redirectToRoute('app_sortie_creer');
         }
 
-        // 2. Traitement lors de la soumission du formulaire d'annulation
         if ($request->isMethod('POST')) {
-            $motif = trim((string) $request->request->get('motif'));
+            $motif = trim((string)$request->request->get('motif'));
 
             if (empty($motif)) {
                 $this->addFlash('danger', 'Le motif d\'annulation est obligatoire.');
             } else {
-                $etatAnnulee = $etatRepository->findOneBy(['libelle' => 'Annulée']);
+                $etatAnnulee = $etatRepository->findOneBy([
+                    'libelle' => 'Annulée'
+                ]);
 
                 if (!$etatAnnulee) {
                     $this->addFlash('danger', 'L\'état "Annulée" est introuvable en base de données.');
-                    // TODO: Rediriger vers la liste des sorties (ex: path('app_main_home'))
+
                     return $this->redirectToRoute('app_sortie_creer');
                 }
 
-                // Affectation du motif et changement d'état
                 $sortie->setMotifAnnulation($motif);
                 $sortie->setEtat($etatAnnulee);
 
@@ -198,7 +206,6 @@ class SortieController extends AbstractController
 
                 $this->addFlash('success', 'La sortie a bien été annulée.');
 
-                // TODO: Rediriger vers la liste des sorties (ex: path('app_main_home'))
                 return $this->redirectToRoute('app_sortie_creer');
             }
         }

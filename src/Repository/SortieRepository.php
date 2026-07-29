@@ -15,36 +15,44 @@ class SortieRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Sortie::class);
     }
-
     /**
-     * Récupère toutes les sorties avec leurs relations chargées en une seule requête (JOIN)
+     * Récupère une sortie spécifique par son ID avec uniquement les relations
+     * nécessaires pour sa modification (Campus et Lieu).
      *
-     * @return Sortie[]
+     * @param int $id L'identifiant de la sortie
+     * @return Sortie|null
      */
-    public function findAllWithRelations(): array
+    public function findOneForEdit(int $id): ?Sortie
     {
         return $this->createQueryBuilder('s')
-            ->leftJoin('s.organisateur', 'o')
-            ->addSelect('o')
+            ->leftJoin('s.siteOrganisateur', 'c')
+            ->addSelect('c')
+            ->leftJoin('s.lieu', 'l')
+            ->addSelect('l')
+            ->where('s.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Récupère une sortie spécifique par son ID avec uniquement les relations
+     * nécessaires pour son annulation (État, Campus, Lieu et Ville).
+     *
+     * @param int $id L'identifiant de la sortie
+     * @return Sortie|null
+     */
+    public function findOneForCancel(int $id): ?Sortie
+    {
+        return $this->createQueryBuilder('s')
             ->leftJoin('s.siteOrganisateur', 'c')
             ->addSelect('c')
             ->leftJoin('s.etat', 'e')
             ->addSelect('e')
             ->leftJoin('s.lieu', 'l')
             ->addSelect('l')
-            ->leftJoin('s.participants', 'p')
-            ->addSelect('p')
-            ->getQuery()
-            ->getResult();
-    }
-    
-    public function findOneWithRelations(int $id): ?Sortie
-    {
-        return $this->createQueryBuilder('s')
-            ->leftJoin('s.siteOrganisateur', 'c')
-            ->addSelect('c')
-            ->leftJoin('s.lieu', 'l')
-            ->addSelect('l')
+            ->leftJoin('l.ville', 'v')
+            ->addSelect('v')
             ->where('s.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
