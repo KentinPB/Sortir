@@ -72,8 +72,13 @@ class SortieController extends AbstractController
 
         // 6. Affichage de la vue
         return $this->render('sortie/form.html.twig', [
-            'sortieForm' => $form->createView(),
-        ]);
+            'sortieForm' => $form,
+        ], new Response(
+            null,
+            $form->isSubmitted() && !$form->isValid()
+                ? Response::HTTP_UNPROCESSABLE_ENTITY // Code 422 pour Turbo
+                : Response::HTTP_OK                   // Code 200 normal
+        ));
     }
 
     #[Route('/modifier/{id}', name: 'modifier', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]

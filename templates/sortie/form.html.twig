@@ -12,37 +12,31 @@
             </h2>
         </div>
 
-        <div class="card-body">
-            {# 1. Début du formulaire principal #}
+        {# 1. ON ATTACHE LE CONTROLEUR STIMULUS "lieu" ICI #}
+        <div class="card-body" data-controller="lieu">
+
             {{ form_start(sortieForm) }}
+            {{ form_errors(sortieForm) }}
 
             <div class="row">
-                {# Colonne de gauche : Informations principales de la sortie #}
+                {# Colonne de gauche #}
                 <div class="col-md-6">
-                    <div class="mb-3">
-                        {{ form_row(sortieForm.nom) }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form_row(sortieForm.dateHeureDebut) }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form_row(sortieForm.dateLimiteInscription) }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form_row(sortieForm.nbInscriptionsMax) }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form_row(sortieForm.duree) }}
-                    </div>
+                    <div class="mb-3">{{ form_row(sortieForm.nom) }}</div>
+                    <div class="mb-3">{{ form_row(sortieForm.dateHeureDebut) }}</div>
+                    <div class="mb-3">{{ form_row(sortieForm.dateLimiteInscription) }}</div>
+                    <div class="mb-3">{{ form_row(sortieForm.nbInscriptionsMax) }}</div>
+                    <div class="mb-3">{{ form_row(sortieForm.duree) }}</div>
                 </div>
 
-                {# Colonne de droite : Campus et détails du Lieu #}
+                {# Colonne de droite #}
                 <div class="col-md-6">
+                    <div class="mb-3">{{ form_row(sortieForm.siteOrganisateur) }}</div>
+
+                    {# 2. ACTION STIMULUS AU CHANGEMENT DU LIEU #}
                     <div class="mb-3">
-                        {{ form_row(sortieForm.siteOrganisateur) }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form_row(sortieForm.lieu) }}
+                        {{ form_row(sortieForm.lieu, {
+                            'attr': {'data-action': 'change->lieu#update'}
+                        }) }}
                     </div>
 
                     <div class="mb-3">
@@ -71,44 +65,32 @@
 
             <hr class="my-4">
 
-            {# 2. Ligne unique pour tous les boutons d'action alignés #}
+            {# Boutons #}
             <div class="row g-2 justify-content-end align-items-center">
-                <div class="col-md-3">
-                    {{ form_widget(sortieForm.enregistrer) }}
-                </div>
-                <div class="col-md-3">
-                    {{ form_widget(sortieForm.publier) }}
-                </div>
-
-                {# Bouton Supprimer visuel (positionné sur la même ligne) #}
+                <div class="col-md-3">{{ form_widget(sortieForm.enregistrer) }}</div>
+                <div class="col-md-3">{{ form_widget(sortieForm.publier) }}</div>
                 {% if isEdit ?? false and sortie is defined %}
                     <div class="col-md-3">
-                        <button type="button" class="btn btn-danger w-100" onclick="if(confirm('Êtes-vous sûr de vouloir supprimer cette sortie ?')) { document.getElementById('delete-form').submit(); }">
+                        <button type="button" class="btn btn-danger w-100"
+                                onclick="if(confirm('Êtes-vous sûr ?')) { document.getElementById('delete-form').submit(); }">
                             Supprimer la sortie
                         </button>
                     </div>
                 {% endif %}
-
                 <div class="col-md-3">
                     <a href="#" class="btn btn-outline-secondary w-100">Retour à la liste</a>
                 </div>
             </div>
 
-            {# 3. Fin du formulaire principal #}
             {{ form_end(sortieForm) }}
 
-            {# 4. Vrai formulaire de suppression (totalement indépendant et caché) #}
             {% if isEdit ?? false and sortie is defined %}
-                <form id="delete-form" method="post" action="{{ path('app_sortie_supprimer', {'id': sortie.id}) }}" style="display: none;">
+                <form id="delete-form" method="post" action="{{ path('app_sortie_supprimer', {'id': sortie.id}) }}"
+                      style="display: none;">
                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ sortie.id) }}">
                 </form>
             {% endif %}
 
         </div>
     </div>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script src="{{ asset('js/lieu-details.js') }}" defer></script>
 {% endblock %}

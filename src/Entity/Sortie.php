@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+// 1. N'OUBLIEZ PAS CET IMPORT
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SortieRepository::class)]
 class Sortie
@@ -17,24 +19,53 @@ class Sortie
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le nom de la sortie est obligatoire.')]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $nom = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'La date et l\'heure de début sont obligatoires.')]
+    #[Assert\GreaterThan(
+        'now',
+        message: 'La date de la sortie doit être située dans le futur.'
+    )]
     private ?\DateTime $dateHeureDebut = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'La durée est obligatoire.')]
+    #[Assert\Positive(message: 'La durée doit être un nombre positif de minutes.')]
     private ?int $duree = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'La date limite d\'inscription est obligatoire.')]
+    #[Assert\GreaterThan(
+        'now',
+        message: 'La date de clôture doit être dans le futur.'
+    )]
+    #[Assert\LessThan(
+        propertyPath: 'dateHeureDebut',
+        message: 'La date limite d\'inscription doit être antérieure à la date de la sortie.'
+    )]
     private ?\DateTime $dateLimiteInscription = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'Le nombre de places est obligatoire.')]
+    #[Assert\Positive(message: 'Le nombre de places doit être supérieur à zero.')]
     private ?int $nbInscriptionsMax = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        max: 2000,
+        maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $infoSortie = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $motifAnnulation = null;
 
     #[ORM\ManyToOne(inversedBy: 'sorties')]
@@ -51,6 +82,7 @@ class Sortie
 
     #[ORM\ManyToOne(inversedBy: 'sorties')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: 'Veuillez sélectionner un lieu.')]
     private ?Lieu $lieu = null;
 
     /**
