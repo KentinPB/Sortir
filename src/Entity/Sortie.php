@@ -7,8 +7,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-// 1. N'OUBLIEZ PAS CET IMPORT
 use Symfony\Component\Validator\Constraints as Assert;
+
+// 1. N'OUBLIEZ PAS CET IMPORT
 
 #[ORM\Entity(repositoryClass: SortieRepository::class)]
 class Sortie
@@ -95,6 +96,72 @@ class Sortie
     {
         $this->participants = new ArrayCollection();
         $this->motifAnnulation = ''; // Valeur par défaut pour éviter l'erreur NOT NULL
+    }
+
+    /**
+     * 1. Vérifie si l'utilisateur passé en paramètre est l'organisateur de la sortie.
+     */
+    public function isOrganisateur(?Participant $user): bool
+    {
+        if ($user === null || $this->getOrganisateur() === null) {
+            return false;
+        }
+
+        // On compare soit les objets directement, soit leurs ID
+        return $this->getOrganisateur()->getId() === $user->getId();
+    }
+
+    /**
+     * 2. Vérifie si la sortie est publiée/ouverte ou clôturée
+     */
+    public function isPubliee(): bool
+    {
+        return in_array($this->getEtat()?->getLibelle(), [Etat::OUVERTE, Etat::CLOTUREE], true);
+    }
+
+    /**
+     * 3. Vérifie si la sortie est encore en création (brouillon)
+     */
+    public function isCreee(): bool
+    {
+        return $this->getEtat()?->getLibelle() === Etat::CREEE;
+    }
+
+    /**
+     * 4. Vérifie si la sortie n'a pas encore commencé
+     */
+    public function isNonCommencee(): bool
+    {
+        return $this->getDateHeureDebut() > new \DateTime();
+    }
+
+    /**
+     * 5. Méthode métier : Annulation d'une sortie
+     */
+    public function isAnnulableBy(?Participant $user): bool
+    {
+        // Utilisation directe des briques de base et méthodes métier
+        return $this->isOrganisateur($user)
+            && $this->isPubliee()
+            && $this->isNonCommencee();
+    }
+
+    /**
+     * 6. Méthode métier : Modification d'une sortie
+     */
+    public function isModifiableBy(?Participant $user): bool
+    {
+        return $this->isOrganisateur($user)
+            && $this->isCreee();
+    }
+
+    /**
+     * 7. Vérifie si la sortie est supprimable (non publiée + organisateur)
+     */
+    public function isSupprimableBy(?Participant $user): bool
+    {
+        // Réutilise la brique de création et la vérification d'organisateur
+        return $this->isOrganisateur($user) && $this->isCreee();
     }
 
     public function getId(): ?int
