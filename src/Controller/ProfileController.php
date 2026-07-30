@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use App\Form\ChangePasswordType;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use App\Entity\Participant;
 
 final class ProfileController extends AbstractController
 {
@@ -45,5 +46,12 @@ final class ProfileController extends AbstractController
             'participant' => $participant,
             'form' => $form->createView(),
         ], new Response(null,  $form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK));
+    }
+    #[Route('/profil/{id}', name: 'app_profile_show')]
+    public function show(Participant $participant): Response
+    {
+        return $this->render('profile/show.html.twig', [
+            'participant' => $participant,
+        ]);
     }
 }
