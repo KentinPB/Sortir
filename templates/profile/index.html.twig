@@ -3,30 +3,36 @@
 {% block title %}Mon profil{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
 
-<div class="example-wrapper">
-    <h1>Mon profil</h1>
+<div class="container mt-4">
 
-    <p><strong>Pseudo :</strong> {{ participant.pseudo }}</p>
+    <h1 class="mb-4">Mon profil</h1>
 
-    <p><strong>Nom :</strong> {{ participant.nom }}</p>
+    {{ form_start(form) }}
 
-    <p><strong>Prénom :</strong> {{ participant.prenom }}</p>
+    <div class="mb-3">
+        <label class="form-label">Campus</label>
+        <input
+            type="text"
+            class="form-control"
+            value="{{ participant.campus ? participant.campus.nom : 'Non renseigné' }}"
+            disabled>
+    </div>
 
-    <p><strong>Téléphone :</strong> {{ participant.telephone }}</p>
+    {{ form_row(form.pseudo) }}
+    {{ form_row(form.nom) }}
+    {{ form_row(form.prenom) }}
+    {{ form_row(form.telephone) }}
+    {{ form_row(form.email) }}
+    {{ form_errors(form.plainPassword) }}
+    {{ form_row(form.plainPassword.first) }}
+    {{ form_row(form.plainPassword.second) }}
 
-    <p><strong>Email :</strong> {{ participant.email }}</p>
+    <button type="submit" class="btn btn-primary">
+    Enregistrer
+</button>
 
-    <p><strong>Campus :</strong> {{ participant.campus.nom }}</p>
+{{ form_end(form) }}
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/wamp64/www/Sortir/src/Controller/ProfileController.php</code></li>
-        <li>Your template at <code>C:/wamp64/www/Sortir/templates/profile/index.html.twig</code></li>
-    </ul>
 </div>
 {% endblock %}
