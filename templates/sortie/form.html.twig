@@ -67,9 +67,14 @@
 
             {# Boutons #}
             <div class="row g-2 justify-content-end align-items-center">
-                <div class="col-md-3">{{ form_widget(sortieForm.enregistrer) }}</div>
-                <div class="col-md-3">{{ form_widget(sortieForm.publier) }}</div>
-                {% if isEdit ?? false and sortie is defined %}
+                {# On affiche les boutons Enregistrer/Publier si on est en création (isEdit est faux) ou si on a le droit de modifier #}
+                {% if not (isEdit ?? false) or (sortie is defined and sortie.isModifiableBy(app.user)) %}
+                    <div class="col-md-3">{{ form_widget(sortieForm.enregistrer) }}</div>
+                    <div class="col-md-3">{{ form_widget(sortieForm.publier) }}</div>
+                {% endif %}
+
+                {# On affiche le bouton de suppression uniquement si la sortie est définie et supprimable par l'utilisateur connecté #}
+                {% if (isEdit ?? false) and sortie is defined and sortie.isSupprimableBy(app.user) %}
                     <div class="col-md-3">
                         <button type="button" class="btn btn-danger w-100"
                                 onclick="if(confirm('Êtes-vous sûr ?')) { document.getElementById('delete-form').submit(); }">
@@ -77,6 +82,7 @@
                         </button>
                     </div>
                 {% endif %}
+
                 <div class="col-md-3">
                     <a href="#" class="btn btn-outline-secondary w-100">Retour à la liste</a>
                 </div>
@@ -84,10 +90,10 @@
 
             {{ form_end(sortieForm) }}
 
-            {% if isEdit ?? false and sortie is defined %}
-                <form id="delete-form" method="post" action="{{ path('app_sortie_supprimer', {'id': sortie.id}) }}"
-                      style="display: none;">
+            {% if (isEdit ?? false) and sortie.isSupprimableBy(userConnected) %}
+                <form method="post" action="{{ path('app_sortie_supprimer', {'id': sortie.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette sortie ?');" id="delete-form">
                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ sortie.id) }}">
+                    <button type="submit" class="btn btn-danger w-100">Supprimer la sortie</button>
                 </form>
             {% endif %}
 

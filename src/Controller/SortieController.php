@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Sortie;
+use App\Entity\Participant;
+use App\Form\AnnulationSortieType;
 use App\Form\SortieType;
 use App\Repository\EtatRepository;
 use App\Repository\ParticipantRepository;
@@ -13,9 +15,33 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+// TODO : Accès à l'ensemble des pages si role ROLE_USER
 #[Route('/sortie', name: 'app_sortie_')]
 class SortieController extends AbstractController
 {
+
+    public function __construct(
+        private readonly ParticipantRepository $participantRepository
+    ) {
+    }
+
+    private function getConnectedUser(): Participant
+    {
+        // TODO : À remplacer plus tard quand l'authentification sera en place
+        // return $this->getUser();
+
+        $user = $this->participantRepository->findOneBy([
+            'pseudo' => 'Rémi S.'
+        ]);
+
+        if (!$user) {
+            throw $this->createNotFoundException(
+                'Utilisateur mock introuvable.'
+            );
+        }
+
+        return $user;
+    }
     #[Route('/creer', name: 'creer', methods: ['GET', 'POST'])]
     public function creer(
         Request                $request,
@@ -24,21 +50,14 @@ class SortieController extends AbstractController
         EtatRepository         $etatRepository
     ): Response
     {
-        // -------------------------------------------------------------
-        // 1. MOCK DE L'UTILISATEUR (À remplacer plus tard par $this->getUser())
-        // On récupère arbitrairement le participant "Jeannine L." créé dans les fixtures
-        // -------------------------------------------------------------
-        $userMock = $participantRepository->findOneBy(['pseudo' => 'Jeannine L.']);
-
-        if (!$userMock) {
-            throw $this->createNotFoundException('Utilisateur Mock introuvable. Avez-vous lancé les fixtures ?');
-        }
+        // 1. Récupération de l'utilisateur connecté
+        $userConnected = $this->getConnectedUser();
 
         // 2. Initialisation de la nouvelle Sortie
         $sortie = new Sortie();
 
         // On associe automatiquement l'organisateur (notre mock) et son campus
-        $sortie->setOrganisateur($userMock);
+        $sortie->setOrganisateur($userConnected);
 
         // 3. Création et gestion du formulaire
         $form = $this->createForm(SortieType::class, $sortie);
@@ -65,9 +84,8 @@ class SortieController extends AbstractController
             $entityManager->persist($sortie);
             $entityManager->flush();
 
-            // Redirection après modification (vers l'accueil ou le détail de la sortie)
-            // TODO: Mettre la route vers la liste des sorties (ex: path('app_main_home'))
-            return $this->redirectToRoute('app_sortie_creer');
+            // Redirection après modification (vers le détail de la sortie)
+            return $this->redirectToRoute('sortie_afficher', ['id' => $sortie->getId()]);
         }
 
         // 6. Affichage de la vue
@@ -81,15 +99,19 @@ class SortieController extends AbstractController
         ));
     }
 
+// Contrainte modification d'une sortie si non publiée (etat = "En création") par l'organisateur (avec vérification des droits)
     #[Route('/modifier/{id}', name: 'modifier', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function modifier(
         int                    $id,
         Request                $request,
         EntityManagerInterface $entityManager,
         SortieRepository       $sortieRepository,
-        EtatRepository         $etatRepository
+        EtatRepository         $etatRepository,
+        ParticipantRepository  $participantRepository
     ): Response
     {
+        $userConnected = $this->getConnectedUser();
+
         // 1. Récupérer la sortie existante en base de données
         $sortie = $sortieRepository->findOneForEdit($id);
 
@@ -97,7 +119,18 @@ class SortieController extends AbstractController
             throw $this->createNotFoundException('Cette sortie n\'existe pas.');
         }
 
-        // 2. Création et gestion du formulaire avec l'instance existante
+        // 2. Vérification des droits et du statut
+        if (!$sortie->isOrganisateur($userConnected)) {
+            $this->addFlash('danger', 'Vous n\'êtes pas l\'organisateur de cette sortie.');
+            return $this->redirectToRoute('accueil');
+        }
+
+        if (!$sortie->isCreee()) {
+            $this->addFlash('danger', 'Cette sortie n\'est plus en création et ne peut plus être modifiée.');
+            return $this->redirectToRoute('accueil');
+        }
+
+        // 3. Création et gestion du formulaire avec l'instance existante
         $form = $this->createForm(SortieType::class, $sortie);
         $form->handleRequest($request);
 
@@ -117,101 +150,100 @@ class SortieController extends AbstractController
             // 3. Mise à jour en base de données
             // Pas de persist() nécessaire, car l'entité existe déjà (gérée par Doctrine)
             $entityManager->flush();
-
-            // Redirection après modification (vers l'accueil ou le détail de la sortie)
-            // TODO: Mettre la route vers la liste des sorties (ex: path('app_main_home'))
-            return $this->redirectToRoute('app_sortie_creer');
+            return $this->redirectToRoute('sortie_afficher', ['id' => $sortie->getId()]);
         }
 
-        // 4. Affichage de la vue (vous pouvez réutiliser le même template que la création)
         return $this->render('sortie/form.html.twig', [
             'sortieForm' => $form->createView(),
-            'isEdit' => true, // Utile pour adapter le titre de la page dans Twig si besoin
+            'isEdit' => true,
             'sortie' => $sortie,
+            'userConnected' => $userConnected, // <--- Passe ton mock user à la vue
         ]);
     }
 
+// Contrainte suppression d'une sortie si non publiée (etat = "En création") par l'organisateur (avec vérification des droits)
     #[Route('/supprimer/{id}', name: 'supprimer', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function supprimer(
-        Sortie                 $sortie,
-        Request                $request,
-        EntityManagerInterface $entityManager
-    ): Response
-    {
-        // 1. Vérification des droits (Organisateur de la sortie ou Administrateur)
-        /*
-        if (!($sortie->getOrganisateur() === $this->getUser() || $this->isGranted('ROLE_ADMIN'))) {
-            throw $this->createAccessDeniedException('Vous devez être l\'organisateur ou Administrateur pour supprimer cette sortie !');
-        }
-        */
+        Sortie $sortie,
+        Request $request,
+        EntityManagerInterface $entityManager,
+    ): Response {
+        $userConnected = $this->getConnectedUser();
 
-        // 2. Validation du token CSRF (provenant d'un formulaire POST)
+        // 1. Vérification des droits et du statut "En création"
+        if (!$sortie->isOrganisateur($userConnected)) {
+            $this->addFlash('danger', 'Vous n\'êtes pas l\'organisateur de cette sortie.');
+            return $this->redirectToRoute('accueil');
+        }
+
+        if (!$sortie->isCreee()) {
+            $this->addFlash('danger', 'Seules les sorties en création peuvent être supprimées.');
+            return $this->redirectToRoute('accueil');
+        }
+
+        // 2. Vérification du token CSRF pour sécuriser la suppression
         if ($this->isCsrfTokenValid('delete' . $sortie->getId(), $request->request->get('_token'))) {
             $entityManager->remove($sortie);
             $entityManager->flush();
 
-            $this->addFlash('success', 'La sortie a été supprimée avec succès.');
+            $this->addFlash('success', 'La sortie a été supprimée définitivement.');
         } else {
-            $this->addFlash('danger', 'Action non autorisée (jeton invalide).');
+            $this->addFlash('danger', 'Token de sécurité invalide.');
         }
 
-        // 3. Redirection vers la liste des sorties
-        // TODO: Mettre la route vers la liste des sorties (ex: path('app_main_home'))
-        return $this->redirectToRoute('app_sortie_creer');
+        return $this->redirectToRoute('accueil');
     }
-
-    #[Route('/annuler/{id}', name: 'annuler', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+// Contrainte annulation d'une sortie si publiée (etat = "Ouverte" ou "Clôturée") par l'organisateur (avec vérification des droits)
+    #[Route('/annuler/{id}', name: 'annuler', methods: ['GET', 'POST'])]
     public function annuler(
-        int                    $id,
-        Request                $request,
+        Sortie $sortie,
+        Request $request,
         EntityManagerInterface $entityManager,
-        EtatRepository         $etatRepository,
-        SortieRepository       $sortieRepository
-    ): Response
-    {
-        $sortie = $sortieRepository->findOneForCancel($id);
+        EtatRepository $etatRepository,
+    ): Response {
+        $userConnected = $this->getConnectedUser();
 
-        if (!$sortie) {
-            throw $this->createNotFoundException('Sortie introuvable.');
+        if (!$userConnected) {
+            throw $this->createNotFoundException('Utilisateur introuvable.');
         }
 
-        $libelleEtat = $sortie->getEtat()?->getLibelle();
-
-        if (!in_array($libelleEtat, ['Ouverte', 'Clôturée']) || $sortie->getDateHeureDebut() <= new \DateTime()) {
-            $this->addFlash('danger', 'Cette sortie ne peut pas être annulée.');
-
-            return $this->redirectToRoute('app_sortie_creer');
+        // 1. Vérification des droits, de la date et de l'état
+        if (!$sortie->isOrganisateur($userConnected)) {
+            $this->addFlash('danger', 'Vous n\'êtes pas l\'organisateur de cette sortie.');
+            return $this->redirectToRoute('accueil');
         }
 
-        if ($request->isMethod('POST')) {
-            $motif = trim((string)$request->request->get('motif'));
+        if (!$sortie->isPubliee()) {
+            $this->addFlash('danger', 'La sortie doit être ouverte ou clôturée pour être annulée.');
+            return $this->redirectToRoute('accueil');
+        }
 
-            if (empty($motif)) {
-                $this->addFlash('danger', 'Le motif d\'annulation est obligatoire.');
-            } else {
-                $etatAnnulee = $etatRepository->findOneBy([
-                    'libelle' => 'Annulée'
-                ]);
+        if (!$sortie->isNonCommencee()) {
+            $this->addFlash('danger', 'La sortie a déjà commencé.');
+            return $this->redirectToRoute('accueil');
+        }
 
-                if (!$etatAnnulee) {
-                    $this->addFlash('danger', 'L\'état "Annulée" est introuvable en base de données.');
+        // 2. Création du formulaire d'annulation
+        $form = $this->createForm(AnnulationSortieType::class, $sortie);
+        $form->handleRequest($request);
 
-                    return $this->redirectToRoute('app_sortie_creer');
-                }
+        if ($form->isSubmitted() && $form->isValid()) {
+            $etatAnnulee = $etatRepository->findOneBy(['libelle' => Etat::ANNULEE]);
 
-                $sortie->setMotifAnnulation($motif);
-                $sortie->setEtat($etatAnnulee);
-
-                $entityManager->flush();
-
-                $this->addFlash('success', 'La sortie a bien été annulée.');
-
-                return $this->redirectToRoute('app_sortie_creer');
+            if (!$etatAnnulee) {
+                $this->addFlash('danger', 'L\'état "Annulée" est introuvable en base de données.');
+                return $this->redirectToRoute('accueil');
             }
+
+            $sortie->setEtat($etatAnnulee);
+            $entityManager->flush();
+            $this->addFlash('success', 'La sortie a bien été annulée.');
+            return $this->redirectToRoute('sortie_afficher', ['id' => $sortie->getId()]);
         }
 
         return $this->render('sortie/annuler.html.twig', [
             'sortie' => $sortie,
+            'form' => $form->createView(),
         ]);
     }
 }

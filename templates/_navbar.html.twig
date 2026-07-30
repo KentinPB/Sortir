@@ -1,0 +1,28 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+        <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+
+            <ul class="navbar-nav">
+                {# {% if app.user %} #}
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <li class="nav-item">
+                            {# TODO : changer chemin par path{{ 'app_admin' }}#}
+                            <a class="nav-link" href="#">Administration</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('accueil') }}">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        {# TODO : changer chemin par path{{ 'app_profile' }}#}
+                        <a class="nav-link" href="#">Mon profil</a>
+                    </li>
+                    <li class="nav-item">
+                        {# TODO : changer chemin par path{{ 'app_logout' }}#}
+                        <a class="nav-link" href="#">Se déconnecter</a>
+                    </li>
+                {# {% endif %} #}
+            </ul>
+        </div>
+    </div>
+</nav>
