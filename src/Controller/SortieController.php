@@ -98,7 +98,7 @@ class SortieController extends AbstractController
     }
 
 // Contrainte modification d'une sortie si non publiée (etat = "En création") par l'organisateur (avec vérification des droits)
-    #[Route('/modifier/{id}', name: 'modifier', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    #[Route('/{id}/modifier', name: 'modifier', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function modifier(
         int                    $id,
         Request                $request,
@@ -160,7 +160,7 @@ class SortieController extends AbstractController
     }
 
 // Contrainte suppression d'une sortie si non publiée (etat = "En création") par l'organisateur (avec vérification des droits)
-    #[Route('/supprimer/{id}', name: 'supprimer', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/{id}/supprimer', name: 'supprimer', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function supprimer(
         Sortie                 $sortie,
         Request                $request,
@@ -194,7 +194,7 @@ class SortieController extends AbstractController
     }
 
 // Contrainte annulation d'une sortie si publiée (etat = "Ouverte" ou "Clôturée") par l'organisateur (avec vérification des droits)
-    #[Route('/annuler/{id}', name: 'annuler', methods: ['GET', 'POST'])]
+    #[Route('/{id}/annuler', name: 'annuler', methods: ['GET', 'POST'])]
     public function annuler(
         Sortie                 $sortie,
         Request                $request,

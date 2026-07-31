@@ -2,17 +2,18 @@
 
 namespace App\Controller;
 
-use App\Repository\SortieRepository;
+use App\Entity\Etat;
+use App\Entity\Sortie;
 use App\Repository\CampusRepository;
+use App\Repository\EtatRepository;
+use App\Repository\SortieRepository;
+use App\Service\SortieStateManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use App\Entity\Sortie;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\Response;
-use App\Repository\EtatRepository;
-
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  *  PHP Doc
@@ -20,17 +21,17 @@ use App\Repository\EtatRepository;
 class MainController extends AbstractController
 {
 
-
     #[Route('/', name: 'accueil')]
-    //#[IsGranted('ROLE_USER')]
-    public function index(Request $request, SortieRepository $sortieRepository, CampusRepository $campusRepository): Response
+    public function index(
+        Request            $request,
+        SortieRepository   $sortieRepository,
+        CampusRepository   $campusRepository,
+        SortieStateManager $stateManager
+    ): Response
     {
         $user = $this->getUser();
 
-        // Le campus est proposé automatiquement selon celui de l'utilisateur,
-        // sauf si l'utilisateur choisit explicitement un autre campus dans le filtre
         $campus = $request->query->get('campus') ?: $user?->getCampus()?->getId();
-
         $nom = $request->query->get('nom');
         $dateDebut = $request->query->get('dateDebut');
         $dateFin = $request->query->get('dateFin');
@@ -43,8 +44,13 @@ class MainController extends AbstractController
             $campus, $nom, $dateDebut, $dateFin, $user,
             $estOrganisateur, $estInscrit, $estNonInscrit, $sortiesTerminees
         );
+
+        // <-- Mise à jour automatique des états en fonction de l'horodatage actuel
+        $stateManager->updateEtats($sorties);
+
         $campusList = $campusRepository->findAll();
-        return $this->render('sortir/index.html.twig', [
+
+        return $this->render('main/index.html.twig', [
             'sorties' => $sorties,
             'campusList' => $campusList,
         ]);
@@ -52,26 +58,27 @@ class MainController extends AbstractController
 
     #[Route('/sortie/{id}/inscrire', name: 'sortie_inscrire')]
     #[IsGranted('ROLE_USER')]
-    public function inscrire(Sortie $sortie, EntityManagerInterface $em): Response
+    public function inscrire(
+        Sortie                 $sortie,
+        EntityManagerInterface $em,
+        SortieStateManager     $stateManager
+    ): Response
     {
-        if ($sortie->getEtat()->getLibelle() !== 'Ouverte') {
+        // Réévaluation rapide de l'état avant traitement
+        $stateManager->updateEtat($sortie);
+
+        if ($sortie->getEtat()->getLibelle() !== Etat::OUVERTE) {
             $this->addFlash('danger', "Cette sortie n'est pas ouverte aux inscriptions.");
-            return $this->redirectToRoute('accueil');
-        }
-
-        if ($sortie->getDateLimiteInscription() < new \DateTime()) {
-            $this->addFlash('danger', "La date limite d'inscription est dépassée.");
-            return $this->redirectToRoute('accueil');
-        }
-
-        if ($sortie->getParticipants()->count() >= $sortie->getNbInscriptionsMax()) {
-            $this->addFlash('danger', "Le nombre maximum d'inscriptions est atteint.");
             return $this->redirectToRoute('accueil');
         }
 
         $user = $this->getUser();
         if (!$sortie->getParticipants()->contains($user)) {
             $sortie->addParticipant($user);
+
+            // Re-vérifier si la sortie est complète après l'ajout
+            $stateManager->updateEtat($sortie);
+
             $em->flush();
             $this->addFlash('success', 'Inscription réussie !');
         }
@@ -80,53 +87,36 @@ class MainController extends AbstractController
 
     #[Route('/sortie/{id}/desister', name: 'sortie_desister')]
     #[IsGranted('ROLE_USER')]
-    public function desister(Sortie $sortie, EntityManagerInterface $em): Response
-    {
+    public function desister(
+        Sortie $sortie,
+        EntityManagerInterface $em,
+        SortieStateManager $stateManager
+    ): Response {
+        // Vérification de la date de début
         if ($sortie->getDateHeureDebut() <= new \DateTime()) {
             $this->addFlash('danger', "Impossible de se désister, la sortie a déjà débuté.");
+            return $this->redirectToRoute('accueil');
+        }
+
+        // Autoriser le désistement uniquement si la sortie est Ouverte ou Clôturée
+        $etatLibelle = $sortie->getEtat()?->getLibelle();
+        if (!in_array($etatLibelle, [Etat::OUVERTE, Etat::CLOTUREE], true)) {
+            $this->addFlash('danger', "Vous ne pouvez pas vous désister de cette sortie.");
             return $this->redirectToRoute('accueil');
         }
 
         $user = $this->getUser();
         if ($sortie->getParticipants()->contains($user)) {
             $sortie->removeParticipant($user);
+
+            // Recalculer l'état (ex : si la sortie était clôturée, car complète, elle repasse Ouverte)
+            $stateManager->updateEtat($sortie);
+
             $em->flush();
             $this->addFlash('info', "Tu t'es désisté de la sortie.");
         }
+
         return $this->redirectToRoute('accueil');
     }
 
-#[Route('/sortie/{id}', name: 'sortie_afficher', requirements: ['id' => '\d+'])]
-
-public function afficher(Sortie $sortie): Response
-{
-    return $this->render('sortir/detail.html.twig', ['sortie' => $sortie]);
-}
-
-
-#[Route('/sortie/{id}/annuler', name: 'sortie_annuler')]
-#[IsGranted('ROLE_USER')]
-public function annuler(Sortie $sortie, Request $request, EntityManagerInterface $em, EtatRepository $etatRepository): Response
-{
-    if ($sortie->getOrganisateur() !== $this->getUser()) {
-        $this->addFlash('danger', "Seul l'organisateur peut annuler cette sortie.");
-        return $this->redirectToRoute('accueil');
-    }
-
-    if ($sortie->getEtat()->getLibelle() !== 'Ouverte' || $sortie->getDateHeureDebut() <= new \DateTime()) {
-        $this->addFlash('danger', 'Cette sortie ne peut pas être annulée.');
-        return $this->redirectToRoute('accueil');
-    }
-
-    if ($request->isMethod('POST')) {
-        $motif = $request->request->get('motif');
-        $sortie->setMotifAnnulation($motif);
-        $sortie->setEtat($etatRepository->findOneBy(['libelle' => 'Annulée']));
-        $em->flush();
-        $this->addFlash('success', 'La sortie a été annulée.');
-        return $this->redirectToRoute('accueil');
-    }
-
-    return $this->render('sortir/annuler.html.twig', ['sortie' => $sortie]);
-}
 }
