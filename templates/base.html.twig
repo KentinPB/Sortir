@@ -24,13 +24,14 @@
     <div class="container d-flex justify-content-between align-items-center py-3">
         <h1 class="h3 mb-0">
             <a href="{{ path('accueil') }}" class="text-white text-decoration-none d-flex align-items-center gap-2">
-                <svg width="40" height="40" viewBox="0 0 100 100" style="vertical-align: middle;">
+                <svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
                     <circle cx="50" cy="50" r="48" fill="#0d6efd"/>
                     <path d="M50 20C36.2 20 25 31.2 25 45C25 63.8 50 85 50 85C50 85 75 63.8 75 45C75 31.2 63.8 20 50 20ZM50 55C44.5 55 40 50.5 40 45C40 39.5 44.5 35 50 35C55.5 35 60 39.5 60 45C60 50.5 55.5 55 50 55Z" fill="white"/>
                 </svg>
                 <span>Sortir.com</span>
             </a>
         </h1>
+
         {% include '_navbar.html.twig' %}
     </div>
 </header>
@@ -41,9 +42,9 @@
         {# Affiche les éventuels messages flash #}
         {% for label, messages in app.flashes %}
             {% for message in messages %}
-                <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
                 </div>
             {% endfor %}
         {% endfor %}
