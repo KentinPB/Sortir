@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ sortie.nom }}{% endblock %}
+{% block body %}
+    <h1>{{ sortie.nom }}</h1>
+    <p><strong>Date :</strong> {{ sortie.dateHeureDebut|date('d/m/Y H:i') }}</p>
+    <p><strong>Campus :</strong> {{ sortie.siteOrganisateur.nom }}</p>
+    <p><strong>Organisateur :</strong>
+        <a href="{{ path('app_profile_show', {id: sortie.organisateur.id}) }}">
+            {{ sortie.organisateur.pseudo }}
+        </a>
+    </p>
+    <p><strong>Description :</strong> {{ sortie.infoSortie }}</p>
+    <h3>Participants inscrits ({{ sortie.participants|length }}/{{ sortie.nbInscriptionsMax }})</h3>
+    <ul class="list-group mb-3">
+        {% for participant in sortie.participants %}
+            <li class="list-group-item">
+                <a href="{{ path('app_profile_show', {id: participant.id}) }}">
+                    {{ participant.pseudo }}
+                </a>
+            </li>
+        {% else %}
+            <li class="list-group-item text-muted">Aucun participant inscrit pour le moment.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{{ path('accueil') }}" class="btn btn-secondary">Retour à la liste</a>
+{% endblock %}
