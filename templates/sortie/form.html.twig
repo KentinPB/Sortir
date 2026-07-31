@@ -65,38 +65,39 @@
 
             <hr class="my-4">
 
-            {# Boutons #}
-            <div class="row g-2 justify-content-end align-items-center">
-                {# On affiche les boutons Enregistrer/Publier si on est en création (isEdit est faux) ou si on a le droit de modifier #}
-                {% if not (isEdit ?? false) or (sortie is defined and sortie.isModifiableBy(app.user)) %}
-                    <div class="col-md-3">{{ form_widget(sortieForm.enregistrer) }}</div>
-                    <div class="col-md-3">{{ form_widget(sortieForm.publier) }}</div>
+            {# Zone des boutons d'action alignés et centrés #}
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                {# Condition pour Enregistrer / Publier #}
+                {% if not (isEdit ?? false) or (sortie is defined and sortie.isModifiableBy(app.user ?? userConnected ?? null)) %}
+                    {{ form_widget(sortieForm.enregistrer, {'attr': {'class': 'btn btn-primary'}}) }}
+                    {{ form_widget(sortieForm.publier, {'attr': {'class': 'btn btn-primary'}}) }}
                 {% endif %}
 
-                {# On affiche le bouton de suppression uniquement si la sortie est définie et supprimable par l'utilisateur connecté #}
-                {% if (isEdit ?? false) and sortie is defined and sortie.isSupprimableBy(app.user) %}
-                    <div class="col-md-3">
-                        <button type="button" class="btn btn-danger w-100"
-                                onclick="if(confirm('Êtes-vous sûr ?')) { document.getElementById('delete-form').submit(); }">
-                            Supprimer la sortie
-                        </button>
-                    </div>
+                {# Bouton Supprimer (affiché uniquement en édition si la sortie est supprimable) #}
+                {% if (isEdit ?? false) and sortie is defined and sortie.isSupprimableBy(app.user ?? userConnected ?? null) %}
+                    <button type="button"
+                            class="btn btn-danger"
+                            onclick="if(confirm('Êtes-vous sûr de vouloir supprimer cette sortie ?')) { document.getElementById('delete-form').submit(); }">
+                        Supprimer la sortie
+                    </button>
                 {% endif %}
 
-                <div class="col-md-3">
-                    <a href="#" class="btn btn-outline-secondary w-100">Retour à la liste</a>
-                </div>
+                {# Bouton Retour #}
+                <a href="{{ path('accueil') }}" class="btn btn-secondary">Annuler</a>
             </div>
 
             {{ form_end(sortieForm) }}
 
-            {% if (isEdit ?? false) and sortie.isSupprimableBy(userConnected) %}
-                <form method="post" action="{{ path('app_sortie_supprimer', {'id': sortie.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette sortie ?');" id="delete-form">
+            {# Formulaire caché pour la suppression sécurisée CSRF #}
+            {% if (isEdit ?? false) and sortie is defined and sortie.isSupprimableBy(app.user ?? userConnected ?? null) %}
+                <form method="post"
+                      action="{{ path('app_sortie_supprimer', {'id': sortie.id}) }}"
+                      id="delete-form"
+                      class="d-none">
                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ sortie.id) }}">
-                    <button type="submit" class="btn btn-danger w-100">Supprimer la sortie</button>
                 </form>
             {% endif %}
 
-        </div>
-    </div>
+        </div> {# Fin card-body #}
+    </div> {# Fin card #}
 {% endblock %}
