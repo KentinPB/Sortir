@@ -14,8 +14,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-// TODO : Accès à l'ensemble des pages si role ROLE_USER
+#[IsGranted("ROLE_USER")]
 #[Route('/sortie', name: 'app_sortie_')]
 class SortieController extends AbstractController
 {
@@ -28,12 +29,7 @@ class SortieController extends AbstractController
 
     private function getConnectedUser(): Participant
     {
-        // TODO : À remplacer plus tard quand l'authentification sera en place
-        // return $this->getUser();
-
-        $user = $this->participantRepository->findOneBy([
-            'pseudo' => 'Rémi S.'
-        ]);
+        return $this->getUser();
 
         if (!$user) {
             throw $this->createNotFoundException(

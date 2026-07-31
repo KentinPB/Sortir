@@ -3,7 +3,7 @@
         <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
 
             <ul class="navbar-nav">
-                {# {% if app.user %} #}
+                {% if app.user %}
                     {% if is_granted('ROLE_ADMIN') %}
                         <li class="nav-item">
                             {# TODO : changer chemin par path{{ 'app_admin' }}#}
@@ -14,14 +14,12 @@
                         <a class="nav-link" href="{{ path('accueil') }}">Accueil</a>
                     </li>
                     <li class="nav-item">
-                        {# TODO : changer chemin par path{{ 'app_profile' }}#}
-                        <a class="nav-link" href="#">Mon profil</a>
+                        <a class="nav-link" href="{{ path('app_profile') }}">Mon profil</a>
                     </li>
                     <li class="nav-item">
-                        {# TODO : changer chemin par path{{ 'app_logout' }}#}
-                        <a class="nav-link" href="#">Se déconnecter</a>
+                        <a class="nav-link" href="{{ path('app_logout') }}">Se déconnecter</a>
                     </li>
-                {# {% endif %} #}
+                {% endif %}
             </ul>
         </div>
     </div>
