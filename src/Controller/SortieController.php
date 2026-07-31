@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\Sortie;
 use App\Entity\Participant;
+use App\Entity\Sortie;
 use App\Form\AnnulationSortieType;
 use App\Form\SortieType;
 use App\Repository\EtatRepository;
@@ -22,7 +22,8 @@ class SortieController extends AbstractController
 
     public function __construct(
         private readonly ParticipantRepository $participantRepository
-    ) {
+    )
+    {
     }
 
     private function getConnectedUser(): Participant
@@ -42,6 +43,7 @@ class SortieController extends AbstractController
 
         return $user;
     }
+
     #[Route('/creer', name: 'creer', methods: ['GET', 'POST'])]
     public function creer(
         Request                $request,
@@ -164,10 +166,11 @@ class SortieController extends AbstractController
 // Contrainte suppression d'une sortie si non publiée (etat = "En création") par l'organisateur (avec vérification des droits)
     #[Route('/supprimer/{id}', name: 'supprimer', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function supprimer(
-        Sortie $sortie,
-        Request $request,
+        Sortie                 $sortie,
+        Request                $request,
         EntityManagerInterface $entityManager,
-    ): Response {
+    ): Response
+    {
         $userConnected = $this->getConnectedUser();
 
         // 1. Vérification des droits et du statut "En création"
@@ -193,14 +196,16 @@ class SortieController extends AbstractController
 
         return $this->redirectToRoute('accueil');
     }
+
 // Contrainte annulation d'une sortie si publiée (etat = "Ouverte" ou "Clôturée") par l'organisateur (avec vérification des droits)
     #[Route('/annuler/{id}', name: 'annuler', methods: ['GET', 'POST'])]
     public function annuler(
-        Sortie $sortie,
-        Request $request,
+        Sortie                 $sortie,
+        Request                $request,
         EntityManagerInterface $entityManager,
-        EtatRepository $etatRepository,
-    ): Response {
+        EtatRepository         $etatRepository,
+    ): Response
+    {
         $userConnected = $this->getConnectedUser();
 
         if (!$userConnected) {
