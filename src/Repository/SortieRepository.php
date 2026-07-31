@@ -40,4 +40,56 @@ class SortieRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+    public function findByFiltres(
+        ?string $campus, ?string $nom, ?string $dateDebut, ?string $dateFin,
+                $user, bool $estOrganisateur, bool $estInscrit, bool $estNonInscrit, bool $sortiesTerminees
+    ): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->leftJoin('s.etat', 'e')
+            ->orderBy('s.dateHeureDebut', 'ASC');
+
+        if ($campus) {
+            $qb->andWhere('s.siteOrganisateur = :campus')
+                ->setParameter('campus', $campus);
+        }
+
+        if ($nom) {
+            $qb->andWhere('s.nom LIKE :nom')
+                ->setParameter('nom', '%' . $nom . '%');
+        }
+
+        if ($dateDebut) {
+            $qb->andWhere('s.dateHeureDebut >= :dateDebut')
+                ->setParameter('dateDebut', new \DateTime($dateDebut));
+        }
+
+        if ($dateFin) {
+            $qb->andWhere('s.dateHeureDebut <= :dateFin')
+                ->setParameter('dateFin', new \DateTime($dateFin));
+        }
+
+        if ($estOrganisateur) {
+            $qb->andWhere('s.organisateur = :user')
+                ->setParameter('user', $user);
+        }
+
+        if ($estInscrit) {
+            $qb->andWhere(':user MEMBER OF s.participants')
+                ->setParameter('user', $user);
+        }
+
+        if ($estNonInscrit) {
+            $qb->andWhere(':user NOT MEMBER OF s.participants')
+                ->setParameter('user', $user);
+        }
+
+        if (!$sortiesTerminees) {
+            $qb->andWhere('e.libelle != :terminee')
+                ->setParameter('terminee', 'Terminee');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }
