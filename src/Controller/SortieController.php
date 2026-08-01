@@ -29,7 +29,14 @@ class SortieController extends AbstractController
 
     private function getConnectedUser(): Participant
     {
-        return $this->getUser();
+        /*-------------------------------------------------------*/
+        /* TODO : Décommenter quand authentification implémentée */
+        /*-------------------------------------------------------*/
+        //return $this->getUser();
+
+        // Recherche magique par l'attribut 'pseudo' (ou 'username')
+        $user = $participantRepository->findOneBy(['pseudo' => 'Jeannine L.']);
+        dd($user);
 
         if (!$user) {
             throw $this->createNotFoundException(
