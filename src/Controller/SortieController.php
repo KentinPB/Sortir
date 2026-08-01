@@ -36,7 +36,6 @@ class SortieController extends AbstractController
 
         // Recherche magique par l'attribut 'pseudo' (ou 'username')
         $user = $participantRepository->findOneBy(['pseudo' => 'Jeannine L.']);
-        dd($user);
 
         if (!$user) {
             throw $this->createNotFoundException(
