@@ -134,7 +134,7 @@ class SortieController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            // Gestion optionnelle des boutons (si vous avez gardé Enregistrer / Publier)
+            // Gestion de la publication vs enregistrement simple
             if ($form->has('publier') && $form->get('publier')->isClicked()) {
                 $etat = $etatRepository->findOneBy(['libelle' => 'Ouverte']);
                 if ($etat) {
@@ -143,10 +143,17 @@ class SortieController extends AbstractController
                 $this->addFlash('success', 'La sortie a été modifiée et publiée avec succès !');
             } elseif ($form->has('enregistrer') && $form->get('enregistrer')->isClicked()) {
                 $this->addFlash('success', 'Les modifications de la sortie ont été enregistrées.');
+            } else {
+                // Sécurité par défaut si le bouton transmis n'est pas catché explicitement
+                // (Si vous voulez que "Publier" soit l'action par défaut ou si le bouton s'y prète)
+                $etat = $etatRepository->findOneBy(['libelle' => 'Ouverte']);
+                if ($etat) {
+                    $sortie->setEtat($etat);
+                }
+                $this->addFlash('success', 'La sortie a été mise à jour.');
             }
 
-            // 3. Mise à jour en base de données
-            // Pas de persist() nécessaire, car l'entité existe déjà (gérée par Doctrine)
+            // 4. Mise à jour en base de données
             $entityManager->flush();
             return $this->redirectToRoute('sortie_afficher', ['id' => $sortie->getId()]);
         }
@@ -155,8 +162,13 @@ class SortieController extends AbstractController
             'sortieForm' => $form->createView(),
             'isEdit' => true,
             'sortie' => $sortie,
-            'userConnected' => $userConnected, // <--- Passe ton mock user à la vue
-        ]);
+            'userConnected' => $userConnected,
+        ], new Response(
+            null,
+            $form->isSubmitted() && !$form->isValid()
+                ? Response::HTTP_UNPROCESSABLE_ENTITY // Gère proprement les erreurs de validation pour Turbo
+                : Response::HTTP_OK
+        ));
     }
 
 // Contrainte suppression d'une sortie si non publiée (etat = "En création") par l'organisateur (avec vérification des droits)

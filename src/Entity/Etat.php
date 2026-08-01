@@ -14,8 +14,8 @@ class Etat
     public const CREEE = 'En création';
     public const OUVERTE = 'Ouverte';
     public const CLOTUREE = 'Clôturée';
-    public const EN_COURS = 'Activité en cours';
-    public const PASSEE = 'Passée';
+    public const EN_COURS = 'En cours';
+    public const TERMINEE = 'Terminée';
     public const ANNULEE = 'Annulée';
     public const HISTORISEE = 'Historisée';
 

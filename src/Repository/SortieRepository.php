@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Etat;
 use App\Entity\Sortie;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -17,8 +18,8 @@ class SortieRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère une sortie spécifique par son ID avec uniquement les relations
-     * nécessaires pour sa modification (Campus et Lieu).
+     * Récupère une sortie spécifique par son ID avec toutes les relations
+     * nécessaires pour sa modification (Campus, Lieu, Ville et État).
      *
      * @param int $id L'identifiant de la sortie
      * @return Sortie|null
@@ -30,6 +31,10 @@ class SortieRepository extends ServiceEntityRepository
             ->addSelect('c')
             ->leftJoin('s.lieu', 'l')
             ->addSelect('l')
+            ->leftJoin('l.ville', 'v')
+            ->addSelect('v')
+            ->leftJoin('s.etat', 'e')
+            ->addSelect('e')
             ->where('s.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
@@ -66,52 +71,70 @@ class SortieRepository extends ServiceEntityRepository
      * @return Sortie[] Returns an array of Sortie objects
      */
     public function findByFiltres(
-        ?string $campus, ?string $nom, ?string $dateDebut, ?string $dateFin,
-                $user, bool $estOrganisateur, bool $estInscrit, bool $estNonInscrit, bool $sortiesTerminees
+        ?string $campus,
+        ?string $nom,
+        ?string $dateDebut,
+        ?string $dateFin,
+                $user,
+        bool    $estOrganisateur,
+        bool    $estInscrit,
+        bool    $estNonInscrit,
+        bool    $sortiesTerminees
     ): array
     {
         $qb = $this->createQueryBuilder('s')
-            ->leftJoin('s.etat', 'e')
+            ->leftJoin('s.etat', 'e')->addSelect('e')
+            ->leftJoin('s.siteOrganisateur', 'c')->addSelect('c')
+            ->leftJoin('s.organisateur', 'o')->addSelect('o')
+            ->leftJoin('s.participants', 'p')->addSelect('p')
             ->orderBy('s.dateHeureDebut', 'ASC');
 
-        if ($campus) {
-            $qb->andWhere('s.siteOrganisateur = :campus')
+        // Campus
+        if (!empty($campus)) {
+            $qb->andWhere('c.id = :campus')
                 ->setParameter('campus', $campus);
         }
 
-        if ($nom) {
+        // Nom
+        if (!empty($nom)) {
             $qb->andWhere('s.nom LIKE :nom')
                 ->setParameter('nom', '%' . $nom . '%');
         }
 
-        if ($dateDebut) {
+        // Date début
+        if (!empty($dateDebut)) {
             $qb->andWhere('s.dateHeureDebut >= :dateDebut')
                 ->setParameter('dateDebut', new \DateTime($dateDebut));
         }
 
-        if ($dateFin) {
+        // Date fin
+        if (!empty($dateFin)) {
             $qb->andWhere('s.dateHeureDebut <= :dateFin')
-                ->setParameter('dateFin', new \DateTime($dateFin));
+                ->setParameter('dateFin', new \DateTime($dateFin . ' 23:59:59'));
         }
 
+        // Organisateur
         if ($estOrganisateur) {
-            $qb->andWhere('s.organisateur = :user')
+            $qb->andWhere('o = :user')
                 ->setParameter('user', $user);
         }
 
+        // Inscrit
         if ($estInscrit) {
             $qb->andWhere(':user MEMBER OF s.participants')
                 ->setParameter('user', $user);
         }
 
+        // Non inscrit
         if ($estNonInscrit) {
             $qb->andWhere(':user NOT MEMBER OF s.participants')
                 ->setParameter('user', $user);
         }
 
+        // Sorties terminées uniquement si la case est décochée
         if (!$sortiesTerminees) {
-            $qb->andWhere('e.libelle != :terminee')
-                ->setParameter('terminee', 'Terminee');
+            $qb->andWhere('e.libelle <> :terminee')
+                ->setParameter('terminee', Etat::TERMINEE);;
         }
 
         return $qb->getQuery()->getResult();

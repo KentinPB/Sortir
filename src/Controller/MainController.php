@@ -12,48 +12,65 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  *  PHP Doc
  */
+#[IsGranted("ROLE_USER")]
+#[Route("/accueil")]
 class MainController extends AbstractController
 {
 
     #[Route('/', name: 'accueil')]
     public function index(
-        Request            $request,
-        SortieRepository   $sortieRepository,
-        CampusRepository   $campusRepository,
+        Request $request,
+        SortieRepository $sortieRepository,
+        CampusRepository $campusRepository,
         SortieStateManager $stateManager
     ): Response
     {
         $user = $this->getUser();
 
-        $campus = $request->query->get('campus') ?: $user?->getCampus()?->getId();
+        // Aucun filtre par défaut
+        $campus = $request->query->get('campus');
         $nom = $request->query->get('nom');
         $dateDebut = $request->query->get('dateDebut');
         $dateFin = $request->query->get('dateFin');
+
         $estOrganisateur = $request->query->getBoolean('estOrganisateur');
         $estInscrit = $request->query->getBoolean('estInscrit');
         $estNonInscrit = $request->query->getBoolean('estNonInscrit');
         $sortiesTerminees = $request->query->getBoolean('sortiesTerminees');
 
         $sorties = $sortieRepository->findByFiltres(
-            $campus, $nom, $dateDebut, $dateFin, $user,
-            $estOrganisateur, $estInscrit, $estNonInscrit, $sortiesTerminees
+            $campus,
+            $nom,
+            $dateDebut,
+            $dateFin,
+            $user,
+            $estOrganisateur,
+            $estInscrit,
+            $estNonInscrit,
+            $sortiesTerminees
         );
 
-        // <-- Mise à jour automatique des états en fonction de l'horodatage actuel
-        $stateManager->updateEtats($sorties);
+        dump(count($sorties));
 
-        $campusList = $campusRepository->findAll();
+        $stateManager->updateEtats($sorties);
 
         return $this->render('main/index.html.twig', [
             'sorties' => $sorties,
-            'campusList' => $campusList,
+            'campusList' => $campusRepository->findAll(),
         ]);
+    }
+
+    #[Route('/sortie/{id}', name: 'sortie_afficher', requirements: ['id' => '\d+'])]
+
+    public function afficher(Sortie $sortie): Response
+    {
+        return $this->render('main/detail.html.twig', ['sortie' => $sortie]);
     }
 
     #[Route('/sortie/{id}/inscrire', name: 'sortie_inscrire')]
@@ -86,7 +103,6 @@ class MainController extends AbstractController
     }
 
     #[Route('/sortie/{id}/desister', name: 'sortie_desister')]
-    #[IsGranted('ROLE_USER')]
     public function desister(
         Sortie $sortie,
         EntityManagerInterface $em,

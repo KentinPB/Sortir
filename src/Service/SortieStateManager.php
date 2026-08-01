@@ -12,49 +12,120 @@ class SortieStateManager
     public function __construct(
         private readonly EtatRepository $etatRepository,
         private readonly EntityManagerInterface $em
-    ) {}
+    ) {
+    }
 
     /**
-     * Calcule et met à jour l'état d'une sortie spécifique.
+     * Met à jour automatiquement l'état d'une sortie.
+     *
+     * @return bool true si l'état a changé.
      */
     public function updateEtat(Sortie $sortie): bool
     {
         $currentEtat = $sortie->getEtat()?->getLibelle();
 
-        // Ne pas toucher aux sorties en création ou annulées
-        if (in_array($currentEtat, [Etat::CREEE, Etat::ANNULEE, Etat::HISTORISEE], true)) {
+        // Les sorties en création ou historisées ne sont jamais modifiées automatiquement.
+        if (in_array($currentEtat, [Etat::CREEE, Etat::HISTORISEE], true)) {
             return false;
         }
 
-        $now = new \DateTime();
-        $dateDebut = $sortie->getDateHeureDebut();
+        $now = new \DateTimeImmutable();
 
-        // Calcul de la date de fin = dateDebut + durée (convertie en minutes)
-        $dateFin = (clone $dateDebut)->modify('+' . $sortie->getDuree() . ' minutes');
+        $dateDebut = \DateTimeImmutable::createFromMutable($sortie->getDateHeureDebut());
 
-        // Date d'archivage/historisation (1 mois après la fin de la sortie)
-        $dateHistorisation = (clone $dateFin)->modify('+1 month');
+        $dateFin = $dateDebut->modify(sprintf('+%d minutes', $sortie->getDuree()));
+
+        $dateHistorisation = $dateFin->modify('+1 month');
+
+        $dateLimite = \DateTimeImmutable::createFromMutable(
+            $sortie->getDateLimiteInscription()
+        );
+
+        $nbParticipants = $sortie->getParticipants()->count();
+
+        $nbMax = $sortie->getNbInscriptionsMax();
 
         $targetEtatLibelle = null;
 
-        if ($now >= $dateHistorisation) {
-            $targetEtatLibelle = Etat::HISTORISEE;
-        } elseif ($now >= $dateFin) {
-            $targetEtatLibelle = Etat::PASSEE;
-        } elseif ($now >= $dateDebut && $now < $dateFin) {
-            $targetEtatLibelle = Etat::EN_COURS;
-        } elseif ($now >= $sortie->getDateLimiteInscription() || $sortie->getParticipants()->count() >= $sortie->getNbInscriptionsMax()) {
-            $targetEtatLibelle = Etat::CLOTUREE;
+        /**
+         * ===========================
+         * Cas particulier : ANNULÉE
+         * ===========================
+         */
+        if ($currentEtat === Etat::ANNULEE) {
+
+            if ($now >= $dateHistorisation) {
+                $targetEtatLibelle = Etat::HISTORISEE;
+            }
+
         } else {
-            // Si la date limite n'est pas dépassée et qu'il reste de la place
-            $targetEtatLibelle = Etat::OUVERTE;
+
+            /**
+             * ===========================
+             * 1. Historisée (1 mois après la fin)
+             * ===========================
+             */
+            if ($now >= $dateHistorisation) {
+
+                $targetEtatLibelle = Etat::HISTORISEE;
+
+            }
+            /**
+             * ===========================
+             * 2. Terminée (La sortie est passée)
+             * ===========================
+             */
+            elseif ($now >= $dateFin) {
+
+                $targetEtatLibelle = Etat::TERMINEE;
+
+            }
+            /**
+             * ===========================
+             * 3. Activité en cours (Elle a commencé mais pas finie)
+             * ===========================
+             */
+            elseif ($now >= $dateDebut) {
+
+                $targetEtatLibelle = Etat::EN_COURS;
+
+            }
+            /**
+             * ===========================
+             * 4. Clôturée (Date limite dépassée OU complet)
+             * ===========================
+             */
+            elseif (
+                $now > $dateLimite ||
+                $nbParticipants >= $nbMax
+            ) {
+
+                $targetEtatLibelle = Etat::CLOTUREE;
+
+            }
+            /**
+             * ===========================
+             * 5. Ouverte (Par défaut)
+             * ===========================
+             */
+            else {
+
+                $targetEtatLibelle = Etat::OUVERTE;
+
+            }
         }
 
-        // Si l'état a changé, on applique la modification
-        if ($targetEtatLibelle && $currentEtat !== $targetEtatLibelle) {
-            $etatEntity = $this->etatRepository->findOneBy(['libelle' => $targetEtatLibelle]);
-            if ($etatEntity) {
-                $sortie->setEtat($etatEntity);
+        if (
+            $targetEtatLibelle !== null &&
+            $targetEtatLibelle !== $currentEtat
+        ) {
+
+            $etat = $this->etatRepository->findOneBy([
+                'libelle' => $targetEtatLibelle
+            ]);
+
+            if ($etat !== null) {
+                $sortie->setEtat($etat);
                 return true;
             }
         }
@@ -63,13 +134,14 @@ class SortieStateManager
     }
 
     /**
-     * Met à jour les états pour une collection de sorties et applique un flush s'il y a eu des modifications.
+     * Met à jour les états d'une collection de sorties.
      *
-     * @param Sortie[] $sorties
+     * @param iterable<Sortie> $sorties
      */
     public function updateEtats(iterable $sorties): void
     {
         $hasChanges = false;
+
         foreach ($sorties as $sortie) {
             if ($this->updateEtat($sortie)) {
                 $hasChanges = true;
