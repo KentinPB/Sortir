@@ -25,12 +25,15 @@ class MainController extends AbstractController
 
     #[Route('/', name: 'accueil')]
     public function index(
-        Request $request,
-        SortieRepository $sortieRepository,
-        CampusRepository $campusRepository,
+        Request            $request,
+        SortieRepository   $sortieRepository,
+        CampusRepository   $campusRepository,
         SortieStateManager $stateManager
     ): Response
     {
+        /*// Connaître le fuseau horaire par défaut pour le débogage
+        dump(date_default_timezone_get());
+        dump(new \DateTimeImmutable());*/
         $user = $this->getUser();
 
         // Aucun filtre par défaut
@@ -56,8 +59,6 @@ class MainController extends AbstractController
             $sortiesTerminees
         );
 
-        dump(count($sorties));
-
         $stateManager->updateEtats($sorties);
 
         return $this->render('main/index.html.twig', [
@@ -67,14 +68,21 @@ class MainController extends AbstractController
     }
 
     #[Route('/sortie/{id}', name: 'sortie_afficher', requirements: ['id' => '\d+'])]
-
-    public function afficher(Sortie $sortie): Response
+    public function afficher(
+        Sortie                 $sortie,
+        SortieStateManager     $stateManager,
+        EntityManagerInterface $em
+    ): Response
     {
-        return $this->render('main/detail.html.twig', ['sortie' => $sortie]);
+        $stateManager->updateEtat($sortie);
+        $em->flush();
+
+        return $this->render('main/detail.html.twig', [
+            'sortie' => $sortie
+        ]);
     }
 
     #[Route('/sortie/{id}/inscrire', name: 'sortie_inscrire')]
-    #[IsGranted('ROLE_USER')]
     public function inscrire(
         Sortie                 $sortie,
         EntityManagerInterface $em,
@@ -83,6 +91,7 @@ class MainController extends AbstractController
     {
         // Réévaluation rapide de l'état avant traitement
         $stateManager->updateEtat($sortie);
+        $em->flush();
 
         if ($sortie->getEtat()->getLibelle() !== Etat::OUVERTE) {
             $this->addFlash('danger', "Cette sortie n'est pas ouverte aux inscriptions.");
@@ -104,13 +113,31 @@ class MainController extends AbstractController
 
     #[Route('/sortie/{id}/desister', name: 'sortie_desister')]
     public function desister(
-        Sortie $sortie,
+        Sortie                 $sortie,
         EntityManagerInterface $em,
-        SortieStateManager $stateManager
-    ): Response {
+        SortieStateManager     $stateManager
+    ): Response
+    {
+        $stateManager->updateEtat($sortie);
+        $em->flush();
+
         // Vérification de la date de début
-        if ($sortie->getDateHeureDebut() <= new \DateTime()) {
-            $this->addFlash('danger', "Impossible de se désister, la sortie a déjà débuté.");
+        if (
+            in_array(
+                $sortie->getEtat()->getLibelle(),
+                [
+                    Etat::EN_COURS,
+                    Etat::TERMINEE,
+                    Etat::HISTORISEE
+                ],
+                true
+            )
+        ) {
+            $this->addFlash(
+                'danger',
+                "Impossible de se désister, la sortie a déjà commencé."
+            );
+
             return $this->redirectToRoute('accueil');
         }
 

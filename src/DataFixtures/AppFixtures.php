@@ -131,6 +131,7 @@ class AppFixtures extends Fixture
             ['Sortie Escape Game', 'Annulée', 'Jojo56', 'Escape Game Illucio', 6, '-3 days', 90, 'Résolution d\'énigmes en temps limité (Annulé suite météo).'],
         ];
 
+        $sorties = [];
         foreach ($sortiesData as $data) {
             $sortie = new Sortie();
             $sortie->setNom($data[0]);
@@ -153,16 +154,43 @@ class AppFixtures extends Fixture
             // Gestion du motif d'annulation (obligatoire si le champ est NOT NULL en base)
             $sortie->setMotifAnnulation($data[1] === 'Annulée' ? 'Annulation pour raisons climatiques exceptionnelles.' : '');
 
-            // Ajout de quelques participants inscrits si la sortie n'est pas "En création"
-            if ($data[1] !== 'En création') {
-                $sortie->addParticipant($participants['Jeannine L.']);
-                $sortie->addParticipant($participants['Rémi S.']);
-                if ($data[4] > 3) {
-                    $sortie->addParticipant($participants['Spinoz A.']);
-                }
+            $manager->persist($sortie);
+            $sorties[] = $sortie;
+        }
+
+        // 7. Inscription des participants aux sorties
+        foreach ($sorties as $sortie) {
+            // Pas d'inscriptions si la sortie est "En création"
+            if ($sortie->getEtat()->getLibelle() === 'En création') {
+                continue;
             }
 
-            $manager->persist($sortie);
+            // L'organisateur est inscrit par défaut à sa sortie
+            $organisateur = $sortie->getOrganisateur();
+            $sortie->addParticipant($organisateur);
+
+            // Déterminer un nombre aléatoire de participants supplémentaires à inscrire
+            // (entre 1 et le maximum autorisé moins 1 pour l'organisateur)
+            $maxAdditional = min(count($participants) - 1, $sortie->getNbInscriptionsMax() - 1);
+            if ($maxAdditional > 0) {
+                $nbInscrits = random_int(1, $maxAdditional);
+
+                // Mélanger les participants pour en choisir aléatoirement
+                $allParticipants = array_values($participants);
+                shuffle($allParticipants);
+
+                $addedCount = 0;
+                foreach ($allParticipants as $participant) {
+                    if ($addedCount >= $nbInscrits) {
+                        break;
+                    }
+                    // Ne pas réinscrire l'organisateur s'il retombe dans le tirage
+                    if ($participant !== $organisateur && !$sortie->getParticipants()->contains($participant)) {
+                        $sortie->addParticipant($participant);
+                        $addedCount++;
+                    }
+                }
+            }
         }
 
         $manager->flush();
