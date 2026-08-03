@@ -12,6 +12,7 @@ use App\Form\ChangePasswordType;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Entity\Participant;
 
+#[IsGranted('ROLE_USER')]
 final class ProfileController extends AbstractController
 {
     #[Route('/profil', name: 'app_profile')]
@@ -41,7 +42,7 @@ final class ProfileController extends AbstractController
             return $this->redirectToRoute('app_profile');
         }
 
-        return $this->render('profile/index.html.twig', [
+        return $this->render('profile/profileForm.html.twig', [
 
             'participant' => $participant,
             'form' => $form->createView(),
