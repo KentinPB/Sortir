@@ -104,7 +104,10 @@ class SortieStateManager
     /**
      * Vérifie si la sortie doit être historisée.
      */
-    private function shouldBeHistorisee(\DateTimeImmutable $now, \DateTimeImmutable $dateHistorisation): bool
+    private function shouldBeHistorisee(
+        \DateTimeImmutable $now,
+        \DateTimeImmutable $dateHistorisation
+    ): bool
     {
         return $now >= $dateHistorisation;
     }
