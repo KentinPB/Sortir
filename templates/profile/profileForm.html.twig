@@ -6,42 +6,56 @@
 
 <div class="container mt-4">
 
-    <h1 class="mb-4">Mon profil</h1>
+    <h1 class="text-center mb-4">Mon profil</h1>
+    {# TODO: Déplacer ce style inline dans app.css en créant une classe .profile-photo #}
 
-    {% if participant.photo %}
-        <img src="{{ asset('uploads/photos/' ~ participant.photo) }}" alt="Photo de profil" class="img-thumbnail mb-3"
-             width="180">
-    {% else %}
-        <img src="{{ asset('images/default-avatar.png') }}" alt="Photo par défaut" class="img-thumbnail mb-3"
-             width="180">
-    {% endif %}
+    <div class="row">
 
-    {{ form_start(form) }}
+        <!--Colonne Photo -->
+        <div class="profile-photo-col col-md-3 text-center">
+        {%  if participant.photo %}
+            <img src="{{ asset('uploads/photos/'~participant.photo) }}"
+                 alt="Photo de {{ participant.pseudo }}"
+                 class="img-thumbnail mb-3 rounded border"
+                 style="width:240px; height:180px; object-fit:contain;">
+        {% else %}
+            <img src="{{ asset('images/default-avatar.png') }}"
+                 alt="Photo par défaut"
+                 class="img-thumbnail mb-3 rounded border"
+                 style="width:240px; height:180px; object-fit:contain;">
+        {% endif %}
+        </div>
 
-    <div class="mb-3">
-        <label class="form-label">Campus</label>
-        <input
-            type="text"
-            class="form-control"
-            value="{{ participant.campus ? participant.campus.nom : 'Non renseigné' }}"
-            disabled>
+        <!-- Colonne formulaire -->
+        <div class="profile-form-col col-md-9">
+            {{ form_start(form) }}
+
+            <div class="mb-3">
+                <label class="form-label">Campus</label>
+                <input
+                type="text"
+                class="form-control"
+                value="{{ participant.campus ? participant.campus.nom : 'Non renseigné' }}"
+                disabled>
+            </div>
+
+            {{ form_row(form.pseudo) }}
+            {{ form_row(form.nom) }}
+            {{ form_row(form.prenom) }}
+            {{ form_row(form.telephone) }}
+            {{ form_row(form.email) }}
+            {{ form_errors(form.plainPassword) }}
+            {{ form_row(form.plainPassword.first) }}
+            {{ form_row(form.plainPassword.second) }}
+            {{ form_row(form.photoFile) }}
+
+            <button type="submit" class="btn btn-primary">
+                Enregistrer
+            </button>
+
+            {{ form_end(form) }}
+        </div>
     </div>
-
-    {{ form_row(form.pseudo) }}
-    {{ form_row(form.nom) }}
-    {{ form_row(form.prenom) }}
-    {{ form_row(form.telephone) }}
-    {{ form_row(form.email) }}
-    {{ form_errors(form.plainPassword) }}
-    {{ form_row(form.plainPassword.first) }}
-    {{ form_row(form.plainPassword.second) }}
-    {{ form_row(form.photoFile) }}
-
-<button type="submit" class="btn btn-primary">
-    Enregistrer
-</button>
-
-{{ form_end(form) }}
 
 </div>
 {% endblock %}
