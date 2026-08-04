@@ -8,6 +8,14 @@
 
     <h1 class="mb-4">Mon profil</h1>
 
+    {% if participant.photo %}
+        <img src="{{ asset('uploads/photos/' ~ participant.photo) }}" alt="Photo de profil" class="img-thumbnail mb-3"
+             width="180">
+    {% else %}
+        <img src="{{ asset('images/default-avatar.png') }}" alt="Photo par défaut" class="img-thumbnail mb-3"
+             width="180">
+    {% endif %}
+
     {{ form_start(form) }}
 
     <div class="mb-3">
@@ -27,8 +35,9 @@
     {{ form_errors(form.plainPassword) }}
     {{ form_row(form.plainPassword.first) }}
     {{ form_row(form.plainPassword.second) }}
+    {{ form_row(form.photoFile) }}
 
-    <button type="submit" class="btn btn-primary">
+<button type="submit" class="btn btn-primary">
     Enregistrer
 </button>
 

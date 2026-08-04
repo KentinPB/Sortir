@@ -12,7 +12,8 @@ use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
-
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Validator\Constraints\Image;
 
 class ProfileType extends AbstractType
 {
@@ -50,6 +51,29 @@ class ProfileType extends AbstractType
                         'min' => 8,
                         'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères.',
                     ]),
+                ],
+            ])
+            ->add('photoFile', FileType::class, [
+                'label' => 'Ma photo',
+
+                // Le champ n'est pas lié à une propriété de l'entité.
+                // Le traitement de l'upload est effectué dans le contrôleur.
+                'mapped' => false,
+
+                'required' => false,
+
+                // Le champ n'étant pas lié à une propriété de l'entité,
+                // ses contraintes de validation sont définies directement dans le formulaire.
+                'constraints' => [
+                    new Image([
+                        'maxSize'=> '2M',
+                        'maxSizeMessage' => 'La taille maximale autorisée est de 2 Mo.',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                        ],
+                        'mimeTypesMessage' => 'Merci d\'importer une image valide (JPEG ou PNG).',
+                    ])
                 ],
             ])
         ;

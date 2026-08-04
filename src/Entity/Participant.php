@@ -78,6 +78,12 @@ class Participant implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Sortie::class, mappedBy: 'participants')]
     private Collection $sorties;
 
+    /**
+     * Nom du fichier de la photo de profil.
+     */
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $photo = null;
+
     public function __construct()
     {
         $this->sortiesOrganisees = new ArrayCollection();
@@ -301,6 +307,18 @@ class Participant implements UserInterface, PasswordAuthenticatedUserInterface
         if ($this->sorties->removeElement($sorty)) {
             $sorty->removeParticipant($this);
         }
+
+        return $this;
+    }
+
+    public function getPhoto(): ?string
+    {
+        return $this->photo;
+    }
+
+    public function setPhoto(?string $photo): static
+    {
+        $this->photo = $photo;
 
         return $this;
     }
