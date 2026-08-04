@@ -1,38 +1,73 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mon profil{% endblock %}
+{% block title %}
+    {% if form.campus is defined %}
+        {% if participant.id %}
+            Modifier le profil de {{ participant.pseudo }}
+        {% else %}
+            Créer un nouvel utilisateur
+        {% endif %}
+    {% else %}
+        Mon profil
+    {% endif %}
+{% endblock %}
 
 {% block body %}
 
-<div class="container mt-4">
+    <div class="container mt-4">
 
-    <h1 class="mb-4">Mon profil</h1>
+        <h1 class="mb-4">
+            {% if form.campus is defined %}
+                {% if participant.id %}
+                    Modifier le profil de {{ participant.pseudo }}
+                {% else %}
+                    Créer un nouvel utilisateur
+                {% endif %}
+            {% else %}
+                Mon profil
+            {% endif %}
+        </h1>
 
-    {{ form_start(form) }}
+        {{ form_start(form) }}
 
-    <div class="mb-3">
-        <label class="form-label">Campus</label>
-        <input
-            type="text"
-            class="form-control"
-            value="{{ participant.campus ? participant.campus.nom : 'Non renseigné' }}"
-            disabled>
+        {# Si l'admin est sur la page, on affiche la liste déroulante du Campus #}
+        {% if form.campus is defined %}
+            {{ form_row(form.campus) }}
+            {% if form.actif is defined %}
+                {{ form_row(form.actif) }}
+            {% endif %}
+            {% if form.administrateur is defined %}
+                {{ form_row(form.administrateur) }}
+            {% endif %}
+        {% else %}
+            {# Pour un utilisateur classique, le campus reste en lecture seule #}
+            <div class="mb-3">
+                <label class="form-label">Campus</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    value="{{ participant.campus ? participant.campus.nom : 'Non renseigné' }}"
+                    disabled>
+            </div>
+        {% endif %}
+
+        {{ form_row(form.pseudo) }}
+        {{ form_row(form.nom) }}
+        {{ form_row(form.prenom) }}
+        {{ form_row(form.telephone) }}
+        {{ form_row(form.email) }}
+        {{ form_errors(form.plainPassword) }}
+        {{ form_row(form.plainPassword.first) }}
+        {{ form_row(form.plainPassword.second) }}
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+            {% if form.campus is defined %}
+                <a href="{{ path('app_admin_users_list') }}" class="btn btn-secondary ms-2">Annuler</a>
+            {% endif %}
+        </div>
+
+        {{ form_end(form) }}
+
     </div>
-
-    {{ form_row(form.pseudo) }}
-    {{ form_row(form.nom) }}
-    {{ form_row(form.prenom) }}
-    {{ form_row(form.telephone) }}
-    {{ form_row(form.email) }}
-    {{ form_errors(form.plainPassword) }}
-    {{ form_row(form.plainPassword.first) }}
-    {{ form_row(form.plainPassword.second) }}
-
-    <button type="submit" class="btn btn-primary">
-    Enregistrer
-</button>
-
-{{ form_end(form) }}
-
-</div>
 {% endblock %}

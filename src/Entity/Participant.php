@@ -82,6 +82,8 @@ class Participant implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->sortiesOrganisees = new ArrayCollection();
         $this->sorties = new ArrayCollection();
+        // Rôle par défaut lors de la création d'un participant
+        $this->roles = ['ROLE_USER'];
     }
 
     public function getId(): ?int
@@ -117,7 +119,7 @@ class Participant implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
+        // Garantie que chaque utilisateur possède au moins ROLE_USER
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
@@ -221,6 +223,13 @@ class Participant implements UserInterface, PasswordAuthenticatedUserInterface
     public function setAdministrateur(bool $administrateur): static
     {
         $this->administrateur = $administrateur;
+
+        // Synchronisation automatique de la colonne 'roles'
+        if ($administrateur) {
+            $this->roles = ['ROLE_ADMIN'];
+        } else {
+            $this->roles = ['ROLE_USER'];
+        }
 
         return $this;
     }
