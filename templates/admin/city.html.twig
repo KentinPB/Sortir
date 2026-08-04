@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Gérer les villes | {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    <h1>Gérer les villes</h1>
+
+    <form action="{{ path('app_admin_city_add') }}" method="POST">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Ville</th>
+                <th>Code postal</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for city in cities %}
+                <tr>
+                    <td>{{ city.nom }}</td>
+                    <td>{{ city.codePostal }}</td>
+                    <td>
+                        <!-- Actions pour modifier ou supprimer la ville -->
+                        <a href="{{ path('app_admin_city_edit', {'id': city.id}) }}" class="btn btn-sm btn-primary">Modifier</a>
+                        <a href="{{ path('app_admin_city_delete', {'id': city.id}) }}"
+                           class="btn btn-sm btn-danger">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+
+            {# Ligne pour l'ajout d'un nouveau campus #}
+            <tr>
+                <td>
+                    <input type="text" name="nameCity" class="form-control" placeholder="Nom du campus"
+                           id="newCityName" required>
+                </td>
+                <td>
+                    <input type="text" name="postalCode" class="form-control" placeholder="Code postal"
+                           id="newPostalCode" required>
+                </td>
+                <td>
+                    <button type="submit" class="btn btn-success">Ajouter</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+{% endblock %}

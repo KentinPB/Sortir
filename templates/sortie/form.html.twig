@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-    {{ (isEdit ?? false) ? 'Modifier une sortie' : 'Créer une sortie' }} - Sortir.com
+    {{ (isEdit ?? false) ? 'Modifier une sortie' : 'Créer une sortie' }} | {{ parent() }}
 {% endblock %}
 
 {% block body %}
@@ -91,7 +91,7 @@
             {# Formulaire caché pour la suppression sécurisée CSRF #}
             {% if (isEdit ?? false) and sortie is defined and sortie.isSupprimableBy(app.user ?? userConnected ?? null) %}
                 <form method="post"
-                      action="{{ path('app_sortie_supprimer', {'id': sortie.id}) }}"
+                      action="{{ path('app_sortie_delete', {'id': sortie.id}) }}"
                       id="delete-form"
                       class="d-none">
                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ sortie.id) }}">

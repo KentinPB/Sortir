@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Gérer les campus | {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    <h1>Gérer les campus</h1>
+
+    <form action="{{ path('app_admin_campus_add') }}" method="POST">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Campus</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for campus in campuses %}
+                <tr>
+                    <td>{{ campus.nom }}</td>
+                    <td>
+                        <!-- Actions pour modifier ou supprimer le campus -->
+                        <a href="{{ path('app_admin_campus_edit', {'id': campus.id}) }}" class="btn btn-sm btn-primary">Modifier</a>
+                        <a href="{{ path('app_admin_campus_delete', {'id': campus.id}) }}"
+                           class="btn btn-sm btn-danger">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+
+            {# Ligne pour l'ajout d'un nouveau campus #}
+            <tr>
+                <td>
+                    <input type="text" name="nameCampus" class="form-control" placeholder="Nom du campus"
+                           id="newCampusName" required>
+                </td>
+                <td>
+                    <button type="submit" class="btn btn-success">Ajouter</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+{% endblock %}
