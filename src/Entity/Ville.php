@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\VilleRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\String\UnicodeString;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: VilleRepository::class)]
@@ -44,7 +45,8 @@ class Ville
 
     public function setNom(string $nom): static
     {
-        $this->nom = $nom;
+        // Transforme "Saint-Étienne" -> "SAINT-ETIENNE"
+        $this->nom = (new UnicodeString($nom))->ascii()->upper()->toString();
 
         return $this;
     }

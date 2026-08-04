@@ -6,6 +6,7 @@ use App\Repository\CampusRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\String\UnicodeString;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CampusRepository::class)]
@@ -54,7 +55,8 @@ class Campus
 
     public function setNom(string $nom): static
     {
-        $this->nom = $nom;
+        // Transforme "Échirolles" ou "nantes" → "ECHIROLLES" / "NANTES"
+        $this->nom = (new UnicodeString($nom))->ascii()->upper()->toString();
 
         return $this;
     }
