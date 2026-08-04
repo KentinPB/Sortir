@@ -44,7 +44,8 @@ class Ville
 
     public function setNom(string $nom): static
     {
-        $this->nom = $nom;
+        // Transforme "Saint-Étienne" -> "SAINT-ETIENNE"
+        $this->nom = u($nom)->ascii()->upper()->toString();
 
         return $this;
     }

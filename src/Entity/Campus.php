@@ -54,7 +54,8 @@ class Campus
 
     public function setNom(string $nom): static
     {
-        $this->nom = $nom;
+        // Transforme "Échirolles" ou "nantes" → "ECHIROLLES" / "NANTES"
+        $this->nom = u($nom)->ascii()->upper()->toString();
 
         return $this;
     }
