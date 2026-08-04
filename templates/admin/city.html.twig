@@ -5,46 +5,94 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Gérer les villes</h1>
+    <div class="container my-4">
+        <h1 class="mb-4">Gérer les villes</h1>
 
-    <form action="{{ path('app_admin_city_add') }}" method="POST">
-        <table class="table">
-            <thead>
-            <tr>
-                <th>Ville</th>
-                <th>Code postal</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for city in cities %}
-                <tr>
-                    <td>{{ city.nom }}</td>
-                    <td>{{ city.codePostal }}</td>
-                    <td>
-                        <!-- Actions pour modifier ou supprimer la ville -->
-                        <a href="{{ path('app_admin_city_edit', {'id': city.id}) }}" class="btn btn-sm btn-primary">Modifier</a>
-                        <a href="{{ path('app_admin_city_delete', {'id': city.id}) }}"
-                           class="btn btn-sm btn-danger">Supprimer</a>
-                    </td>
-                </tr>
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'danger' ? 'danger' : 'success' }} alert-dismissible fade show"
+                     role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                </div>
             {% endfor %}
+        {% endfor %}
 
-            {# Ligne pour l'ajout d'un nouveau campus #}
-            <tr>
-                <td>
-                    <input type="text" name="nameCity" class="form-control" placeholder="Nom du campus"
-                           id="newCityName" required>
-                </td>
-                <td>
-                    <input type="text" name="postalCode" class="form-control" placeholder="Code postal"
-                           id="newPostalCode" required>
-                </td>
-                <td>
-                    <button type="submit" class="btn btn-success">Ajouter</button>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </form>
+        {# Formulaire Ajout / Modification #}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header {{ isEdit ? 'bg-warning text-dark' : 'bg-primary text-white' }}">
+                <h5 class="card-title mb-0">
+                    {{ isEdit ? 'Modifier la ville : ' ~ ville.nom : 'Ajouter une nouvelle ville' }}
+                </h5>
+            </div>
+            <div class="card-body">
+                {{ form_start(form) }}
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        {{ form_label(form.nom) }}
+                        {{ form_widget(form.nom) }}
+                        {{ form_errors(form.nom) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form_label(form.codePostal) }}
+                        {{ form_widget(form.codePostal) }}
+                        {{ form_errors(form.codePostal) }}
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn {{ isEdit ? 'btn-warning' : 'btn-success' }} w-100">
+                            {{ isEdit ? 'Enregistrer' : 'Ajouter' }}
+                        </button>
+                        {% if isEdit %}
+                            <a href="{{ path('app_admin_city_list') }}" class="btn btn-outline-secondary">
+                                Annuler
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+        {# Liste des villes #}
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-striped table-hover mb-0 align-middle">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Ville</th>
+                        <th>Code Postal</th>
+                        <th style="width: 200px;">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for v in villes %}
+                        <tr class="{{ isEdit and v.id == ville.id ? 'table-warning' : '' }}">
+                            <td>{{ v.nom }}</td>
+                            <td>{{ v.codePostal }}</td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ path('app_admin_city_edit', {'id': v.id}) }}"
+                                       class="btn btn-sm btn-primary">
+                                        Modifier
+                                    </a>
+                                    <form action="{{ path('app_admin_city_delete', {'id': v.id}) }}" method="POST"
+                                          onsubmit="return confirm('Voulez-vous vraiment supprimer cette ville ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ v.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-3">
+                                Aucune ville enregistrée.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 {% endblock %}

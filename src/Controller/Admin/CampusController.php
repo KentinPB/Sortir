@@ -21,7 +21,7 @@ final class CampusController extends AbstractController
      */
     #[Route('', name: 'list', methods: ['GET', 'POST'])]
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
-    public function index(
+    public function edit(
         ?Campus                $campus,
         Request                $request,
         CampusRepository       $campusRepository,
@@ -60,7 +60,11 @@ final class CampusController extends AbstractController
     }
 
     #[Route('/{id}/delete', name: 'delete', methods: ['POST'])]
-    public function delete(Campus $campus, Request $request, EntityManagerInterface $em): Response
+    public function delete(
+        Campus                 $campus,
+        Request                $request,
+        EntityManagerInterface $em
+    ): Response
     {
         if ($this->isCsrfTokenValid('delete' . $campus->getId(), $request->request->get('_token'))) {
             $em->remove($campus);
