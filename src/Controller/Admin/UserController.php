@@ -40,7 +40,7 @@ final class UserController extends AbstractController
             'is_new' => true, // Oblige la saisie du mot de passe
         ]);
 
-        $form->handleRequest($request); // <-- Ne pas oublier la gestion de la requête !
+        $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Hashage du mot de passe
@@ -60,7 +60,7 @@ final class UserController extends AbstractController
 
         return $this->render('profile/profileForm.html.twig', [
             'form' => $form->createView(),
-            'participant' => $participant, // <-- Passer la variable participant au template
+            'participant' => $participant,
         ]);
     }
 

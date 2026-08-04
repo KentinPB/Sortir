@@ -20,7 +20,7 @@ class ProfileType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        // Si le formulaire est utilisé par un Admin, on ajoute le choix du Campus, des droits Admin et du statut Actif
+        // Si le formulaire est utilisé par un Admin, on ajoute le choix du Campus et du statut Actif
         if ($options['is_admin']) {
             $builder
                 ->add('campus', EntityType::class, [
@@ -31,11 +31,6 @@ class ProfileType extends AbstractType
                 ])
                 ->add('actif', CheckboxType::class, [
                     'label' => 'Compte actif',
-                    'required' => false,
-                    'disabled' => $options['is_self'], // Grisé si l'admin se modifie lui-même
-                ])
-                ->add('administrateur', CheckboxType::class, [
-                    'label' => 'Administrateur',
                     'required' => false,
                     'disabled' => $options['is_self'], // Grisé si l'admin se modifie lui-même
                 ]);

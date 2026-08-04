@@ -5,40 +5,88 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Gérer les campus</h1>
+    <div class="container my-4">
+        <h1 class="mb-4">Gérer les campus</h1>
 
-    <form action="{{ path('app_admin_campus_add') }}" method="POST">
-        <table class="table">
-            <thead>
-            <tr>
-                <th>Campus</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for campus in campuses %}
-                <tr>
-                    <td>{{ campus.nom }}</td>
-                    <td>
-                        <!-- Actions pour modifier ou supprimer le campus -->
-                        <a href="{{ path('app_admin_campus_edit', {'id': campus.id}) }}" class="btn btn-sm btn-primary">Modifier</a>
-                        <a href="{{ path('app_admin_campus_delete', {'id': campus.id}) }}"
-                           class="btn btn-sm btn-danger">Supprimer</a>
-                    </td>
-                </tr>
+        {# Messages Flash #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'danger' ? 'danger' : 'success' }} alert-dismissible fade show"
+                     role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                </div>
             {% endfor %}
+        {% endfor %}
 
-            {# Ligne pour l'ajout d'un nouveau campus #}
-            <tr>
-                <td>
-                    <input type="text" name="nameCampus" class="form-control" placeholder="Nom du campus"
-                           id="newCampusName" required>
-                </td>
-                <td>
-                    <button type="submit" class="btn btn-success">Ajouter</button>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </form>
+        {# Carte dynamique : Ajout ou Modification #}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header {{ isEdit ? 'bg-warning text-dark' : 'bg-primary text-white' }}">
+                <h5 class="card-title mb-0">
+                    {{ isEdit ? 'Modifier le campus : ' ~ campus.nom : 'Ajouter un nouveau campus' }}
+                </h5>
+            </div>
+            <div class="card-body">
+                {{ form_start(form) }}
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-7">
+                        {{ form_label(form.nom, null, {'label_attr': {'class': 'visually-hidden'}}) }}
+                        {{ form_widget(form.nom) }}
+                        {{ form_errors(form.nom) }}
+                    </div>
+                    <div class="col-md-5 d-flex gap-2">
+                        <button type="submit" class="btn {{ isEdit ? 'btn-warning' : 'btn-success' }}">
+                            {{ isEdit ? 'Enregistrer' : 'Ajouter' }}
+                        </button>
+                        {% if isEdit %}
+                            <a href="{{ path('app_admin_campus_list') }}" class="btn btn-outline-secondary">
+                                Annuler
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+        {# Tableau des campus #}
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-striped table-hover mb-0 align-middle">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Campus</th>
+                        <th style="width: 200px;">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for c in campuses %}
+                        <tr class="{{ isEdit and c.id == campus.id ? 'table-warning' : '' }}">
+                            <td>{{ c.nom }}</td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ path('app_admin_campus_edit', {'id': c.id}) }}"
+                                       class="btn btn-sm btn-primary">
+                                        Modifier
+                                    </a>
+                                    <form action="{{ path('app_admin_campus_delete', {'id': c.id}) }}" method="POST"
+                                          onsubmit="return confirm('Voulez-vous vraiment supprimer ce campus ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ c.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="2" class="text-center text-muted py-3">
+                                Aucun campus enregistré.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 {% endblock %}

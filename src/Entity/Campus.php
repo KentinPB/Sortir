@@ -6,6 +6,7 @@ use App\Repository\CampusRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CampusRepository::class)]
 class Campus
@@ -16,6 +17,11 @@ class Campus
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: 'Le nom du campus ne peut pas être vide.')]
+    #[Assert\Length(
+        max: 100,
+        maxMessage: 'Le nom du campus ne doit pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $nom = null;
 
     /**
@@ -74,7 +80,6 @@ class Campus
     public function removeParticipant(Participant $participant): static
     {
         if ($this->participants->removeElement($participant)) {
-            // set the owning side to null (unless already changed)
             if ($participant->getCampus() === $this) {
                 $participant->setCampus(null);
             }
@@ -104,7 +109,6 @@ class Campus
     public function removeSorty(Sortie $sorty): static
     {
         if ($this->sorties->removeElement($sorty)) {
-            // set the owning side to null (unless already changed)
             if ($sorty->getSiteOrganisateur() === $this) {
                 $sorty->setSiteOrganisateur(null);
             }

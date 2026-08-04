@@ -36,9 +36,6 @@
             {% if form.actif is defined %}
                 {{ form_row(form.actif) }}
             {% endif %}
-            {% if form.administrateur is defined %}
-                {{ form_row(form.administrateur) }}
-            {% endif %}
         {% else %}
             {# Pour un utilisateur classique, le campus reste en lecture seule #}
             <div class="mb-3">
