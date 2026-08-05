@@ -12,8 +12,7 @@
             </h2>
         </div>
 
-        {# 1. ON ATTACHE LE CONTROLEUR STIMULUS "lieu" ICI #}
-        <div class="card-body" data-controller="lieu">
+        <div class="card-body">
 
             {{ form_start(sortieForm) }}
             {{ form_errors(sortieForm) }}
@@ -31,16 +30,8 @@
                 {# Colonne de droite #}
                 <div class="col-md-6">
                     <div class="mb-3">{{ form_row(sortieForm.siteOrganisateur) }}</div>
-
-                    {# @author Développeur JS/UX #}
-                        <div class="mb-3"> {{ form_row(sortieForm.ville) }}</div>
-
-                    {# 2. ACTION STIMULUS AU CHANGEMENT DU LIEU #}
-                    <div class="mb-3">
-                        {{ form_row(sortieForm.lieu, {
-                            'attr': {'data-action': 'change->lieu#update'}
-                        }) }}
-                    </div>
+                    <div class="mb-3">{{ form_row(sortieForm.ville) }}</div>
+                    <div class="mb-3">{{ form_row(sortieForm.lieu) }}</div>
 
                     <div class="mb-3">
                         <label class="form-label" for="lieu-rue">Rue</label>
@@ -68,15 +59,12 @@
 
             <hr class="my-4">
 
-            {# Zone des boutons d'action alignés et centrés #}
             <div class="d-flex flex-wrap justify-content-center gap-2">
-                {# Condition pour Enregistrer / Publier #}
                 {% if not (isEdit ?? false) or (sortie is defined and sortie.isModifiableBy(app.user ?? userConnected ?? null)) %}
                     {{ form_widget(sortieForm.enregistrer, {'attr': {'class': 'btn btn-primary'}}) }}
                     {{ form_widget(sortieForm.publier, {'attr': {'class': 'btn btn-primary'}}) }}
                 {% endif %}
 
-                {# Bouton Supprimer (affiché uniquement en édition si la sortie est supprimable) #}
                 {% if (isEdit ?? false) and sortie is defined and sortie.isSupprimableBy(app.user ?? userConnected ?? null) %}
                     <button type="button"
                             class="btn btn-danger"
@@ -85,13 +73,11 @@
                     </button>
                 {% endif %}
 
-                {# Bouton Retour #}
                 <a href="{{ path('accueil') }}" class="btn btn-secondary">Annuler</a>
             </div>
 
             {{ form_end(sortieForm) }}
 
-            {# Formulaire caché pour la suppression sécurisée CSRF #}
             {% if (isEdit ?? false) and sortie is defined and sortie.isSupprimableBy(app.user ?? userConnected ?? null) %}
                 <form method="post"
                       action="{{ path('app_sortie_delete', {'id': sortie.id}) }}"
@@ -101,13 +87,11 @@
                 </form>
             {% endif %}
 
-        </div> {# Fin card-body #}
-    </div> {# Fin card #}
+        </div>
+    </div>
 {% endblock %}
 
-    {# @author Développeur JS/UX #}
-    {% block javascripts %}
-        {{ parent() }}
-        <script src="{{ asset('js/filtrage-lieux.js') }}"></script>
-    {% endblock %}
-    {# @author Développeur JS/UX #}
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/filtrage-lieux.js') }}"></script>
+{% endblock %}

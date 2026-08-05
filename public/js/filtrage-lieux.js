@@ -1,45 +1,57 @@
 /**
- * Filtrage dynamique des lieux en fonction de la ville
- * sélectionnée dans le formulaire de sortie, et remplissage
- * automatique de Rue / Code postal / Latitude / Longitude.
- * @author Développeur JS/UX
+ * Gestion du filtrage des lieux et des détails sans Stimulus
+ * Compatible avec la navigation Turbo de Symfony
  */
-document.addEventListener('DOMContentLoaded', () => {
-    const selectVille = document.getElementById('sortie_ville');
-    const selectLieu = document.getElementById('sortie_lieu');
+(function () {
+    // 1. Mise à jour des champs Rue / Code Postal / Lat / Lng
+    function updateLieuDetails() {
+        const selectLieu = document.getElementById('sortie_lieu');
+        if (!selectLieu) return;
 
-    if (!selectVille || !selectLieu) {
-        return;
+        const rueInput = document.getElementById('lieu-rue');
+        const cpInput = document.getElementById('lieu-code-postal');
+        const latLngInput = document.getElementById('lieu-lat-lng');
+
+        if (!rueInput || !cpInput || !latLngInput) return;
+
+        const selectedOption = selectLieu.options[selectLieu.selectedIndex];
+
+        if (selectedOption && selectedOption.value) {
+            rueInput.value = selectedOption.dataset.rue || selectedOption.getAttribute('data-rue') || '';
+            cpInput.value = selectedOption.dataset.codePostal || selectedOption.getAttribute('data-code-postal') || '';
+
+            const lat = selectedOption.dataset.latitude || selectedOption.getAttribute('data-latitude') || '';
+            const lng = selectedOption.dataset.longitude || selectedOption.getAttribute('data-longitude') || '';
+
+            latLngInput.value = (lat && lng) ? `${lat} / ${lng}` : '';
+        } else {
+            rueInput.value = '';
+            cpInput.value = '';
+            latLngInput.value = '';
+        }
     }
 
-    selectVille.addEventListener('change', () => {
+    // 2. Chargement des lieux via l'API quand la ville change
+    function handleVilleChange(selectVille) {
+        const selectLieu = document.getElementById('sortie_lieu');
+        if (!selectLieu) return;
+
         const idVille = selectVille.value;
 
-        selectLieu.innerHTML = '';
+        // Réinitialisation
+        selectLieu.innerHTML = '<option value="">--- Choisir un lieu ---</option>';
+        updateLieuDetails();
 
-        if (!idVille) {
-            const option = document.createElement('option');
-            option.textContent = "--- Choisir un lieu ---";
-            selectLieu.appendChild(option);
-            return;
-        }
+        if (!idVille) return;
 
         fetch(`/api/lieux/${idVille}`)
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Erreur réseau lors de la récupération des lieux');
-                }
+                if (!response.ok) throw new Error('Erreur réseau lors du chargement des lieux');
                 return response.json();
             })
             .then(lieux => {
-                const optionVide = document.createElement('option');
-                optionVide.textContent = '--- Choisir un lieu ---';
-                selectLieu.appendChild(optionVide);
-
                 if (lieux.length === 0) {
-                    const option = document.createElement('option');
-                    option.textContent = 'Aucun lieu pour cette ville';
-                    selectLieu.appendChild(option);
+                    selectLieu.innerHTML = '<option value="">Aucun lieu pour cette ville</option>';
                     return;
                 }
 
@@ -55,5 +67,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             })
             .catch(error => console.error('Erreur filtrage lieux :', error));
+    }
+
+    // 3. Écoute globale sur le document (pour résister aux changements de page Turbo)
+    document.addEventListener('change', function (event) {
+        const target = event.target;
+        if (!target) return;
+
+        if (target.id === 'sortie_ville') {
+            handleVilleChange(target);
+        }
+
+        if (target.id === 'sortie_lieu') {
+            updateLieuDetails();
+        }
     });
-});
+
+    // 4. Initialisation pour les chargements initiaux (ex: mode édition ou F5)
+    document.addEventListener('DOMContentLoaded', updateLieuDetails);
+    document.addEventListener('turbo:load', updateLieuDetails);
+})();
