@@ -17,6 +17,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Validator\Constraints\Image;
+use Symfony\Component\Validator\Constraints\PasswordStrength;
 
 class ProfileType extends AbstractType
 {
@@ -53,9 +54,11 @@ class ProfileType extends AbstractType
             ])
             ->add('telephone', TelType::class, [
                 'label' => 'Téléphone',
+                'required' => false,
             ])
             ->add('plainPassword', RepeatedType::class, [
                 'type' => PasswordType::class,
+                'trim' => true, // <-- Évite les espaces parasites accidentels
                 'mapped' => false,
                 'required' => false,
                 'first_options' => [
@@ -70,6 +73,13 @@ class ProfileType extends AbstractType
                         'min' => 8,
                         'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères.',
                     ]),
+                    //TODO: décommenter après les tests
+                    /*new PasswordStrength([
+                        'minScore' => PasswordStrength::STRENGTH_MEDIUM,
+                        'message' => 'Le mot de passe est trop simple. Utilisez une combinaison de majuscules, minuscules, chiffres et caractères spéciaux.',
+
+                    ]),
+                    */
                 ],
             ])
             ->add('photoFile', FileType::class, [
