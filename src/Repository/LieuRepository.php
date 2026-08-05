@@ -24,4 +24,22 @@ class LieuRepository extends ServiceEntityRepository
             ->addSelect('v')
             ->orderBy('l.nom', 'ASC');
     }
+
+    /**
+     * Retourne un QueryBuilder pour charger les lieux d'une seule
+     * ville donnée, avec la ville en Eager Loading.
+     *
+     * @param int $idVille Identifiant de la ville sélectionnée
+     * @return QueryBuilder
+     * @author Développeur JS/UX
+     */
+    public function createFindByVilleQueryBuilder(int $idVille): QueryBuilder
+    {
+        return $this->createQueryBuilder('l')
+            ->leftJoin('l.ville', 'v')
+            ->addSelect('v')
+            ->andWhere('l.ville = :idVille')
+            ->setParameter('idVille', $idVille)
+            ->orderBy('l.nom', 'ASC');
+    }
 }

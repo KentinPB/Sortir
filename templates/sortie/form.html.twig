@@ -32,6 +32,9 @@
                 <div class="col-md-6">
                     <div class="mb-3">{{ form_row(sortieForm.siteOrganisateur) }}</div>
 
+                    {# @author Développeur JS/UX #}
+                        <div class="mb-3"> {{ form_row(sortieForm.ville) }}</div>
+
                     {# 2. ACTION STIMULUS AU CHANGEMENT DU LIEU #}
                     <div class="mb-3">
                         {{ form_row(sortieForm.lieu, {
@@ -101,3 +104,10 @@
         </div> {# Fin card-body #}
     </div> {# Fin card #}
 {% endblock %}
+
+    {# @author Développeur JS/UX #}
+    {% block javascripts %}
+        {{ parent() }}
+        <script src="{{ asset('js/filtrage-lieux.js') }}"></script>
+    {% endblock %}
+    {# @author Développeur JS/UX #}
