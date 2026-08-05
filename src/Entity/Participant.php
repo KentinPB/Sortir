@@ -90,6 +90,7 @@ class Participant implements UserInterface, PasswordAuthenticatedUserInterface
         $this->sorties = new ArrayCollection();
         // Rôle par défaut lors de la création d'un participant
         $this->roles = ['ROLE_USER'];
+        $this->administrateur = false;
     }
 
     public function getId(): ?int

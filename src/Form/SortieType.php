@@ -44,9 +44,10 @@ class SortieType extends AbstractType
             ])
             ->add('siteOrganisateur', EntityType::class, [
                 'class' => Campus::class,
-                'choice_label' => 'nom', // Affiche le nom du campus
+                'choice_label' => 'nom',
                 'label' => 'Campus',
                 'placeholder' => '--- Choisir un campus ---',
+                'disabled' => true, // 💡 Grise le champ et bloque la modification côté serveur
             ])
 
             // --- NOUVEAU CHAMP : Ville (pilote le filtrage) @author Développeur JS/UX
@@ -114,7 +115,7 @@ class SortieType extends AbstractType
      */
     private function ajouterEcouteursVille(FormBuilderInterface $builder): void
     {
-        // Affichage initial (page chargée en création ou édition)
+        // 1. PRE_SET_DATA : Filtre les choix du champ "lieu" selon la ville associée
         $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
             $sortie = $event->getData();
             $form = $event->getForm();
@@ -123,16 +124,24 @@ class SortieType extends AbstractType
                 ? $sortie->getLieu()->getVille()
                 : null;
 
+            // Reconstitution du champ "lieu" filtré sur cette ville
             $this->ajouterChampLieu($form, $ville?->getId());
+        });
 
-            if ($ville !== null) {
-                $form->get('ville')->setData($ville);
+        // 2. POST_SET_DATA : Assigne la valeur au champ non mappé "ville" APRÈS la passe de Symfony
+        $builder->addEventListener(FormEvents::POST_SET_DATA, function (FormEvent $event) {
+            $sortie = $event->getData();
+            $form = $event->getForm();
+
+            if ($sortie instanceof Sortie && $sortie->getLieu() !== null) {
+                $ville = $sortie->getLieu()->getVille();
+                if ($ville !== null && $form->has('ville')) {
+                    $form->get('ville')->setData($ville);
+                }
             }
         });
 
-
-        // Soumission du formulaire : on relit la ville envoyée par le JS
-        // AVANT que Symfony ne valide le lieu soumis.
+        // 3. PRE_SUBMIT : Reconstruit le champ "lieu" avec la ville soumise
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
             $data = $event->getData();
             $idVille = !empty($data['ville']) ? (int)$data['ville'] : null;

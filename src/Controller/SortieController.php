@@ -55,8 +55,13 @@ class SortieController extends AbstractController
         // 2. Initialisation de la nouvelle Sortie
         $sortie = new Sortie();
 
-        // On associe automatiquement l'organisateur (notre mock) et son campus
+// On associe automatiquement l'organisateur et son campus
         $sortie->setOrganisateur($userConnected);
+
+        // 💡 Sélection automatique du campus de l'utilisateur
+        if ($userConnected->getCampus()) {
+            $sortie->setSiteOrganisateur($userConnected->getCampus());
+        }
 
         // 3. Création et gestion du formulaire
         $form = $this->createForm(SortieType::class, $sortie);
@@ -106,7 +111,6 @@ class SortieController extends AbstractController
         EntityManagerInterface $entityManager,
         SortieRepository       $sortieRepository,
         EtatRepository         $etatRepository,
-        ParticipantRepository  $participantRepository
     ): Response
     {
         $userConnected = $this->getConnectedUser();
