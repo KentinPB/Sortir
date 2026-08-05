@@ -4,18 +4,29 @@
 
 {% block body %}
 
-
 <div class="container mt-4">
 
+    {# TODO: Déplacer ce style inline dans app.css en créant une classe .profile-photo #}
+    {# TODO: Factoriser l'affichage des photos et des avatars dans un template partagé #}
     <div class="row">
 
-        <div class="col-md-3">
-            <img src="{{ asset('images/default-profile.png') }}"
-                 alt="Photo de profil"
-                 class="img-fluid border">
+        <!--Colonne Photo -->
+        <div class="profile-photo col-md-3">
+            {%  if participant.photo %}
+            <img src="{{ asset('uploads/photos/'~participant.photo) }}"
+                 alt="Photo de {{ participant.pseudo }}"
+                 class="img-fluid rounded border"
+                 style="width:240px; height:180px; object-fit:contain;">
+            {% else %}
+            <img src="{{ asset('images/default-avatar.png') }}"
+                 alt="Photo par défaut"
+                 class="img-fluid rounded border"
+                 style="width:240px; height:180px; object-fit:contain;">
+            {% endif %}
         </div>
 
-        <div class="col-md-9">
+        <!-- Colonne détails -->
+        <div class="profile-form-col col-md-9">
 
             <h2 class="mb-4">{{ participant.pseudo }}</h2>
             <div class="row mb-2">

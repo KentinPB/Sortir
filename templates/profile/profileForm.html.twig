@@ -28,7 +28,27 @@
             {% endif %}
         </h1>
 
+        <div class="row">
+
         {{ form_start(form) }}
+        <!--Colonne Photo -->
+        <div class="profile-photo-col col-md-3 text-center">
+        {%  if participant.photo %}
+            <img src="{{ asset('uploads/photos/'~participant.photo) }}"
+                 alt="Photo de {{ participant.pseudo }}"
+                 class="img-thumbnail mb-3 rounded border"
+                 style="width:240px; height:180px; object-fit:contain;">
+        {% else %}
+            <img src="{{ asset('images/default-avatar.png') }}"
+                 alt="Photo par défaut"
+                 class="img-thumbnail mb-3 rounded border"
+                 style="width:240px; height:180px; object-fit:contain;">
+        {% endif %}
+        </div>
+
+        <!-- Colonne formulaire -->
+        <div class="profile-form-col col-md-9">
+            {{ form_start(form) }}
 
         {# Si l'admin est sur la page, on affiche la liste déroulante du Campus #}
         {% if form.campus is defined %}
@@ -55,7 +75,7 @@
         {{ form_row(form.email) }}
         {{ form_errors(form.plainPassword) }}
         {{ form_row(form.plainPassword.first) }}
-        {{ form_row(form.plainPassword.second) }}
+        {{ form_row(form.plainPassword.second) }}{{ form_row(form.photoFile) }}
 
         <div class="mt-4">
             <button type="submit" class="btn btn-primary">Enregistrer</button>
@@ -64,7 +84,8 @@
             {% endif %}
         </div>
 
-        {{ form_end(form) }}
+        {{ form_end(form) }}</div>
+    </div>
 
     </div>
 {% endblock %}
