@@ -23,7 +23,11 @@ class Participant implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[Assert\NotBlank(message: "L'email est obligatoire.")]
-    #[Assert\Email(message: "L'adresse email n'est pas valide.")]
+    #[Assert\Email(message: "L'adresse email '{{ value }}' n'est pas valide.")]
+    #[Assert\Length(
+        max: 180,
+        maxMessage: "L'email ne peut pas dépasser {{ limit }} caractères."
+    )]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
@@ -40,18 +44,53 @@ class Participant implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[Assert\NotBlank(message: "Le nom est obligatoire.")]
+    #[Assert\Length(
+        max: 100,
+        maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-ZÀ-ÿ\s\'-]+$/',
+        message: 'Le nom ne doit contenir que des lettres, espaces ou tirets.'
+    )]
     #[ORM\Column(length: 100)]
     private ?string $nom = null;
 
     #[Assert\NotBlank(message: "Le prénom est obligatoire.")]
+    #[Assert\Length(
+        max: 100,
+        maxMessage: "Le prénom ne peut pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-ZÀ-ÿ\s\'-]+$/',
+        message: 'Le prénom ne doit contenir que des lettres, espaces ou tirets.'
+    )]
     #[ORM\Column(length: 100)]
     private ?string $prenom = null;
 
     #[Assert\NotBlank(message: "Le pseudo est obligatoire.")]
+    #[Assert\Length(
+        min: 3,
+        max: 50,
+        minMessage: "Le pseudo doit contenir au moins {{ limit }} caractères.",
+        maxMessage: "Le pseudo ne peut pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-Z0-9_-]+$/',
+        message: 'Le pseudo ne peut contenir que des lettres, des chiffres, des tirets et des underscores (pas d espaces).'
+    )]
     #[ORM\Column(length: 50)]
+    #[Assert\Length(min: 3, max: 50)]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-Z0-9_.-]+$/',
+        message: 'Le pseudo contient des caractères non autorisés.'
+    )]
     private ?string $pseudo = null;
 
     #[ORM\Column(length: 20)]
+    #[Assert\Regex(
+        pattern: '/^(?:\+33|0)[1-9](?:[ .-]?\d{2}){4}$/',
+        message: 'Le numéro de téléphone n’est pas valide.'
+    )]
     private ?string $telephone = null;
 
     #[ORM\Column]
