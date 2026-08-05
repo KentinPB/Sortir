@@ -5,7 +5,9 @@
 {% block body %}
     <form method="post">
         {% if error %}
-            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            <div class="alert alert-danger">
+                Identifiants invalides. Veuillez vérifier votre adresse e-mail et votre mot de passe.
+            </div>
         {% endif %}
 
         {% if app.user %}
