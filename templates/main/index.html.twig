@@ -83,7 +83,87 @@
         </div>
     </div>
 
-    <div class="table-responsive">
+    {% set etatColors = {
+        'Ouverte': 'success',
+        'Clôturée': 'warning',
+        'En cours': 'info',
+        'Terminée': 'secondary',
+        'Annulée': 'danger',
+        'En création': 'light text-dark'
+    } %}
+
+    {# ===================== VISTA DE TARJETAS - solo en móvil (< md) ===================== #}
+    <div class="d-md-none">
+        {% for sortie in sorties %}
+            {% set estOrganisateur = app.user and sortie.organisateur == app.user %}
+            {% set estInscrit = app.user and sortie.participants.contains(app.user) %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                        <h5 class="card-title mb-0">{{ sortie.nom }}</h5>
+                        <span class="badge bg-{{ etatColors[sortie.etat.libelle]|default('secondary') }} text-nowrap">
+                            {{ sortie.etat.libelle }}
+                        </span>
+                    </div>
+
+                    <p class="card-text mb-1 text-muted">{{ sortie.dateHeureDebut|date('d/m/Y H:i') }}</p>
+
+                    <p class="card-text mb-1">
+                        Clôture : {{ sortie.dateLimiteInscription|date('d/m/Y') }}
+                    </p>
+
+                    <p class="card-text mb-1">
+                        {{ sortie.participants|length }}/{{ sortie.nbInscriptionsMax }} inscrits
+                        {% if estInscrit %} · <strong>Inscrit(e)</strong>{% endif %}
+                    </p>
+
+                    <p class="card-text mb-2">
+                        Organisateur :
+                        <a href="{{ path('app_profile_show', {id: sortie.organisateur.id}) }}">
+                            {{ sortie.organisateur.prenom }} {{ sortie.organisateur.nom|slice(0, 1) }}.
+                        </a>
+                    </p>
+
+                    <div class="d-flex flex-wrap gap-1">
+                        <a href="{{ path('sortie_afficher', {id: sortie.id}) }}" class="btn btn-sm btn-outline-info">Afficher</a>
+                        {% if estOrganisateur %}
+                            {% if sortie.etat.libelle == 'En création' %}
+                                <a href="{{ path('app_sortie_modifier', {id: sortie.id}) }}"
+                                   class="btn btn-sm btn-outline-warning">Modifier</a>
+                                <a href="{{ path('app_sortie_modifier', {id: sortie.id}) }}"
+                                   class="btn btn-sm btn-outline-success">Publier</a>
+                            {% elseif sortie.etat.libelle in ['Ouverte', 'Clôturée'] %}
+                                {% if estInscrit %}
+                                    <a href="{{ path('sortie_desister', {id: sortie.id}) }}"
+                                       class="btn btn-sm btn-outline-secondary">Se désister</a>
+                                {% elseif sortie.etat.libelle == 'Ouverte' %}
+                                    <a href="{{ path('sortie_inscrire', {id: sortie.id}) }}"
+                                       class="btn btn-sm btn-outline-primary">S'inscrire</a>
+                                {% endif %}
+                                <a href="{{ path('app_sortie_annuler', {id: sortie.id}) }}"
+                                   class="btn btn-sm btn-outline-danger">Annuler</a>
+                            {% endif %}
+                        {% else %}
+                            {% if sortie.etat.libelle in ['Ouverte', 'Clôturée'] %}
+                                {% if estInscrit %}
+                                    <a href="{{ path('sortie_desister', {id: sortie.id}) }}"
+                                       class="btn btn-sm btn-outline-secondary">Se désister</a>
+                                {% elseif sortie.etat.libelle == 'Ouverte' %}
+                                    <a href="{{ path('sortie_inscrire', {id: sortie.id}) }}"
+                                       class="btn btn-sm btn-outline-primary">S'inscrire</a>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p class="text-muted">Aucune sortie trouvée.</p>
+        {% endfor %}
+    </div>
+
+    {# ===================== VISTA DE TABLA - solo desde tablet/desktop (>= md) ===================== #}
+    <div class="table-responsive d-none d-md-block">
         <table class="table table-striped table-hover align-middle">
             <thead class="table-dark">
             <tr>
@@ -107,14 +187,6 @@
                     <td>{{ sortie.dateLimiteInscription|date('d/m/Y') }}</td>
                     <td>{{ sortie.participants|length }}/{{ sortie.nbInscriptionsMax }}</td>
                     <td>
-                        {% set etatColors = {
-                            'Ouverte': 'success',
-                            'Clôturée': 'warning',
-                            'En cours': 'info',
-                            'Terminée': 'secondary',
-                            'Annulée': 'danger',
-                            'En création': 'light text-dark'
-                        } %}
                         <span class="badge bg-{{ etatColors[sortie.etat.libelle]|default('secondary') }}">
                             {{ sortie.etat.libelle }}
                         </span>
@@ -168,3 +240,5 @@
         <a href="{{ path('app_sortie_creer') }}" class="btn btn-success">Créer une sortie</a>
     </div>
 {% endblock %}
+
+

@@ -1,15 +1,28 @@
 {% extends 'base.html.twig' %}
 {% block title %}{{ sortie.nom }}{% endblock %}
 {% block body %}
-    <h1>{{ sortie.nom }}</h1>
-    <p><strong>Date :</strong> {{ sortie.dateHeureDebut|date('d/m/Y H:i') }}</p>
-    <p><strong>Campus :</strong> {{ sortie.siteOrganisateur.nom }}</p>
-    <p><strong>Organisateur :</strong>
-        <a href="{{ path('app_profile_show', {id: sortie.organisateur.id}) }}">
-            {{ sortie.organisateur.pseudo }}
-        </a>
-    </p>
-    <p><strong>Description :</strong> {{ sortie.infoSortie }}</p>
+    <h1 class="mb-3">{{ sortie.nom }}</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <p><strong>Date :</strong> {{ sortie.dateHeureDebut|date('d/m/Y H:i') }}</p>
+                    <p><strong>Campus :</strong> {{ sortie.siteOrganisateur.nom }}</p>
+                    <p><strong>Organisateur :</strong>
+                        <a href="{{ path('app_profile_show', {id: sortie.organisateur.id}) }}">
+                            {{ sortie.organisateur.pseudo }}
+                        </a>
+                    </p>
+                </div>
+                <div class="col-12 col-md-6">
+                    <p><strong>Description :</strong></p>
+                    <p>{{ sortie.infoSortie }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <h3>Participants inscrits ({{ sortie.participants|length }}/{{ sortie.nbInscriptionsMax }})</h3>
     <ul class="list-group mb-3">
         {% for participant in sortie.participants %}

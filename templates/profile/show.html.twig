@@ -4,42 +4,45 @@
 
 {% block body %}
 
+    <div class="container mt-4">
 
-<div class="container mt-4">
+        <div class="row">
 
-    <div class="row">
-
-        <div class="col-md-3">
-            <img src="{{ asset('images/default-profile.png') }}"
-                 alt="Photo de profil"
-                 class="img-fluid border">
-        </div>
-
-        <div class="col-md-9">
-
-            <h2 class="mb-4">{{ participant.pseudo }}</h2>
-            <div class="row mb-2">
-                <div class="col-3 fw-semibold">Campus</div>
-                <div class="col">{{ participant.campus.nom }}</div>
+            <div class="col-12 col-md-3 mb-3 mb-md-0">
+                <img src="{{ asset('images/default-profile.png') }}"
+                     alt="Photo de profil"
+                     class="img-fluid border">
             </div>
 
-            <div class="row mb-2">
-                <div class="col-3 fw-semibold">Prénom</div>
-                <div class="col">{{ participant.prenom }}</div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-3 fw-semibold">Nom</div>
-                <div class="col">{{ participant.nom }}</div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-3 fw-semibold">Téléphone</div>
-                <div class="col">{{ participant.telephone }}</div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-3 fw-semibold">Email</div>
-                <div class="col">{{ participant.email }}</div>
+            <div class="col-12 col-md-9">
+
+                <h2 class="mb-4">{{ participant.pseudo }}</h2>
+
+                <div class="row mb-2">
+                    <div class="col-12 col-sm-3 fw-semibold">Campus</div>
+                    <div class="col-12 col-sm-9">{{ participant.campus.nom }}</div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-12 col-sm-3 fw-semibold">Prénom</div>
+                    <div class="col-12 col-sm-9">{{ participant.prenom }}</div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-12 col-sm-3 fw-semibold">Nom</div>
+                    <div class="col-12 col-sm-9">{{ participant.nom }}</div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-12 col-sm-3 fw-semibold">Téléphone</div>
+                    <div class="col-12 col-sm-9">{{ participant.telephone }}</div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-12 col-sm-3 fw-semibold">Email</div>
+                    <div class="col-12 col-sm-9">{{ participant.email }}</div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
