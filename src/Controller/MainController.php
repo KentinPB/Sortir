@@ -82,7 +82,7 @@ class MainController extends AbstractController
         ]);
     }
 
-    #[Route('/sortie/{id}/inscrire', name: 'sortie_inscrire')]
+    #[Route('/sortie/{id}/inscrire', name: 'sortie_inscrire', methods: ['POST'])]
     public function inscrire(
         Sortie                 $sortie,
         EntityManagerInterface $em,
@@ -111,7 +111,7 @@ class MainController extends AbstractController
         return $this->redirectToRoute('accueil');
     }
 
-    #[Route('/sortie/{id}/desister', name: 'sortie_desister')]
+    #[Route('/sortie/{id}/desister', name: 'sortie_desister', methods: ['POST'])]
     public function desister(
         Sortie                 $sortie,
         EntityManagerInterface $em,

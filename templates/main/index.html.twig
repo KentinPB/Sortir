@@ -137,11 +137,13 @@
                                    class="btn btn-sm btn-outline-success">Publier</a>
                             {% elseif sortie.etat.libelle in ['Ouverte', 'Clôturée'] %}
                                 {% if estInscrit %}
-                                    <a href="{{ path('sortie_desister', {id: sortie.id}) }}"
-                                       class="btn btn-sm btn-outline-secondary">Se désister</a>
+                                    <form action="{{ path('sortie_desister', {'id': sortie.id}) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">Se désister</button>
+                                    </form>
                                 {% elseif sortie.etat.libelle == 'Ouverte' %}
-                                    <a href="{{ path('sortie_inscrire', {id: sortie.id}) }}"
-                                       class="btn btn-sm btn-outline-primary">S'inscrire</a>
+                                    <form action="{{ path('sortie_inscrire', {'id': sortie.id}) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">S'inscrire</button>
+                                    </form>
                                 {% endif %}
                                 <a href="{{ path('app_sortie_cancel', {id: sortie.id}) }}"
                                    class="btn btn-sm btn-outline-danger">Annuler</a>
@@ -149,11 +151,13 @@
                         {% else %}
                             {% if sortie.etat.libelle in ['Ouverte', 'Clôturée'] %}
                                 {% if estInscrit %}
-                                    <a href="{{ path('sortie_desister', {id: sortie.id}) }}"
-                                       class="btn btn-sm btn-outline-secondary">Se désister</a>
+                                    <form action="{{ path('sortie_desister', {'id': sortie.id}) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">Se désister</button>
+                                    </form>
                                 {% elseif sortie.etat.libelle == 'Ouverte' %}
-                                    <a href="{{ path('sortie_inscrire', {id: sortie.id}) }}"
-                                       class="btn btn-sm btn-outline-primary">S'inscrire</a>
+                                    <form action="{{ path('sortie_inscrire', {'id': sortie.id}) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">S'inscrire</button>
+                                    </form>
                                 {% endif %}
                             {% endif %}
                         {% endif %}
