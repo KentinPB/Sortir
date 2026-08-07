@@ -13,7 +13,8 @@
             </a>
         </div>
 
-        <div class="table-responsive">
+        {# ---------- Vista de tabla: solo visible desde md hacia arriba ---------- #}
+        <div class="table-responsive d-none d-md-block">
             <table class="table table-striped table-hover align-middle">
                 <thead>
                 <tr>
@@ -41,8 +42,6 @@
                             <div class="d-flex gap-1">
                                 <a href="{{ path('app_admin_users_edit', {'id': user.id}) }}"
                                    class="btn btn-sm btn-primary">Modifier</a>
-
-                                {# Formulaire d'activation / désactivation #}
                                 <form method="POST"
                                       action="{{ path('app_admin_users_toggle_active', {'id': user.id}) }}"
                                       onsubmit="return confirm('Êtes-vous sûr de vouloir {{ user.actif ? 'désactiver' : 'activer' }} le compte de {{ user.pseudo }} ?');">
@@ -60,6 +59,44 @@
                 {% endfor %}
                 </tbody>
             </table>
+        </div>
+
+        {# ---------- Vista de tarjetas: solo visible por debajo de md ---------- #}
+        <div class="d-md-none">
+            {% for user in users %}
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">{{ user.prenom }} {{ user.nom }}</h5>
+                            <span class="badge {{ user.actif ? 'bg-success' : 'bg-secondary' }}">
+                                {{ user.actif ? 'Actif' : 'Inactif' }}
+                            </span>
+                        </div>
+                        <p class="card-text mb-1"><strong>Pseudo :</strong> {{ user.pseudo }}</p>
+                        <p class="card-text mb-1"><strong>Campus :</strong> {{ user.campus ? user.campus.nom : '' }}</p>
+                        <p class="card-text mb-1"><strong>Téléphone :</strong> {{ user.telephone }}</p>
+                        <p class="card-text mb-3"><strong>Email :</strong> {{ user.email }}</p>
+
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('app_admin_users_edit', {'id': user.id}) }}"
+                               class="btn btn-sm btn-primary flex-fill">Modifier</a>
+
+                            <form method="POST"
+                                  action="{{ path('app_admin_users_toggle_active', {'id': user.id}) }}"
+                                  class="flex-fill"
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir {{ user.actif ? 'désactiver' : 'activer' }} le compte de {{ user.pseudo }} ?');">
+                                <input type="hidden" name="_token"
+                                       value="{{ csrf_token('toggle_active_' ~ user.id) }}">
+                                {% if user.actif %}
+                                    <button type="submit" class="btn btn-sm btn-danger w-100">Désactiver</button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-sm btn-success w-100">Activer</button>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
     </div>
 {% endblock %}
