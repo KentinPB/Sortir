@@ -9,20 +9,20 @@
         <div class="card mb-4">
             <div class="card-body">
                 <div class="row mb-2">
-                    <div class="col-md-3 fw-bold">Nom de la sortie :</div>
-                    <div class="col-md-9">{{ sortie.nom }}</div>
+                    <div class="col-12 col-sm-3 fw-bold">Nom de la sortie :</div>
+                    <div class="col-12 col-sm-9">{{ sortie.nom }}</div>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-3 fw-bold">Date de la sortie :</div>
-                    <div class="col-md-9">{{ sortie.dateHeureDebut|date('d/m/Y H:i') }}</div>
+                    <div class="col-12 col-sm-3 fw-bold">Date de la sortie :</div>
+                    <div class="col-12 col-sm-9">{{ sortie.dateHeureDebut|date('d/m/Y H:i') }}</div>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-3 fw-bold">Campus :</div>
-                    <div class="col-md-9">{{ sortie.siteOrganisateur ? sortie.siteOrganisateur.nom : '' }}</div>
+                    <div class="col-12 col-sm-3 fw-bold">Campus :</div>
+                    <div class="col-12 col-sm-9">{{ sortie.siteOrganisateur ? sortie.siteOrganisateur.nom : '' }}</div>
                 </div>
                 <div class="row mb-2">
-                    <div class="col-md-3 fw-bold">Lieu :</div>
-                    <div class="col-md-9">
+                    <div class="col-12 col-sm-3 fw-bold">Lieu :</div>
+                    <div class="col-12 col-sm-9">
                         {{ sortie.lieu ? sortie.lieu.nom : '' }}
                         ({{ sortie.lieu and sortie.lieu.ville ? sortie.lieu.ville.nom : '' }})
                     </div>
@@ -37,9 +37,9 @@
             {{ form_errors(form.motifAnnulation) }}
         </div>
 
-        <div class="d-flex justify-content-center align-items-center gap-2 mt-4">
-            <button type="submit" class="btn btn-danger">Enregistrer l'annulation</button>
-            <a href="{{ path('accueil') }}" class="btn btn-secondary">Annuler / Retour</a>
+        <div class="d-flex flex-column flex-sm-row justify-content-center align-items-center gap-2 mt-4">
+            <button type="submit" class="btn btn-danger w-100 w-sm-auto">Enregistrer l'annulation</button>
+            <a href="{{ path('accueil') }}" class="btn btn-secondary w-100 w-sm-auto">Annuler / Retour</a>
         </div>
         {{ form_end(form) }}
     </div>
