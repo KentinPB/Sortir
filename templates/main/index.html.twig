@@ -128,9 +128,9 @@
                         <a href="{{ path('sortie_afficher', {id: sortie.id}) }}" class="btn btn-sm btn-outline-info">Afficher</a>
                         {% if estOrganisateur %}
                             {% if sortie.etat.libelle == 'En création' %}
-                                <a href="{{ path('app_sortie_modifier', {id: sortie.id}) }}"
+                                <a href="{{ path('app_sortie_modify', {id: sortie.id}) }}"
                                    class="btn btn-sm btn-outline-warning">Modifier</a>
-                                <a href="{{ path('app_sortie_modifier', {id: sortie.id}) }}"
+                                <a href="{{ path('app_sortie_modify', {id: sortie.id}) }}"
                                    class="btn btn-sm btn-outline-success">Publier</a>
                             {% elseif sortie.etat.libelle in ['Ouverte', 'Clôturée'] %}
                                 {% if estInscrit %}
@@ -140,7 +140,7 @@
                                     <a href="{{ path('sortie_inscrire', {id: sortie.id}) }}"
                                        class="btn btn-sm btn-outline-primary">S'inscrire</a>
                                 {% endif %}
-                                <a href="{{ path('app_sortie_annuler', {id: sortie.id}) }}"
+                                <a href="{{ path('app_sortie_cancel', {id: sortie.id}) }}"
                                    class="btn btn-sm btn-outline-danger">Annuler</a>
                             {% endif %}
                         {% else %}
