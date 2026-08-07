@@ -31,11 +31,6 @@ class ProfileType extends AbstractType
                     'choice_label' => 'nom',
                     'label' => 'Campus',
                     'placeholder' => 'Sélectionner un campus',
-                ])
-                ->add('actif', CheckboxType::class, [
-                    'label' => 'Compte actif',
-                    'required' => false,
-                    'disabled' => $options['is_self'], // Grisé si l'admin se modifie lui-même
                 ]);
         }
 
