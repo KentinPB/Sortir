@@ -55,7 +55,7 @@ class SortieController extends AbstractController
         // 2. Initialisation de la nouvelle Sortie
         $sortie = new Sortie();
 
-// On associe automatiquement l'organisateur et son campus
+        // On associe automatiquement l'organisateur et son campus
         $sortie->setOrganisateur($userConnected);
 
         // 💡 Sélection automatique du campus de l'utilisateur
