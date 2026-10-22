@@ -10,6 +10,7 @@ Application web développée avec **Symfony 7.4** permettant à des étudiants/p
 - [Installation](#installation)
 - [Base de données](#base-de-données)
 - [Lancer le projet](#lancer-le-projet)
+- [Tests](#tests)
 - [Comptes de démonstration](#comptes-de-démonstration)
 - [Structure du projet](#structure-du-projet)
 - [Cycle de vie d'une sortie](#cycle-de-vie-dune-sortie)
@@ -120,6 +121,14 @@ Pour compiler/installer les assets gérés par AssetMapper :
 php bin/console importmap:install
 php bin/console asset-map:compile
 ```
+
+## Tests
+
+```bash
+php bin/phpunit
+```
+
+Les tests unitaires de `tests/Service/SortieStateManagerTest.php` vérifient le calcul automatique des états (voir [Cycle de vie d'une sortie](#cycle-de-vie-dune-sortie)). L'heure est fournie par une horloge figée (`MockClock` du composant `symfony/clock`) : les résultats ne dépendent pas du jour où les tests sont lancés, et aucune base de données n'est nécessaire.
 
 ## Comptes de démonstration
 
