@@ -108,6 +108,13 @@ class MainController extends AbstractController
 
         $user = $this->getUser();
         if (!$sortie->getParticipants()->contains($user)) {
+            // Vérification explicite des places : l'état « Ouverte » a pu être calculé
+            // juste avant qu'un autre participant prenne la dernière place.
+            if ($sortie->getParticipants()->count() >= $sortie->getNbInscriptionsMax()) {
+                $this->addFlash('danger', 'Cette sortie est complète.');
+                return $this->redirectToRoute('accueil');
+            }
+
             $sortie->addParticipant($user);
 
             // Re-vérifier si la sortie est complète après l'ajout
