@@ -13,6 +13,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ParticipantRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+// Unicité garantie aussi par la base : UniqueEntity ne vérifie qu'au moment de la
+// validation du formulaire, l'index refuse un doublon quel que soit le chemin d'écriture.
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_PSEUDO', fields: ['pseudo'])]
 #[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé.')]
 #[UniqueEntity(fields: ['pseudo'], message: 'Ce pseudo est déjà pris.')]
 class Participant implements UserInterface, PasswordAuthenticatedUserInterface
