@@ -28,15 +28,14 @@ class SortieController extends AbstractController
     {
     }
 
+    /**
+     * Participant connecté. L'accès au contrôleur est réservé aux utilisateurs
+     * connectés (#[IsGranted("ROLE_USER")]), getUser() ne peut donc pas être null.
+     */
     private function getConnectedUser(): Participant
     {
-        return $this->getUser();
-
-        if (!$user) {
-            throw $this->createNotFoundException(
-                'Utilisateur mock introuvable.'
-            );
-        }
+        /** @var Participant $user */
+        $user = $this->getUser();
 
         return $user;
     }

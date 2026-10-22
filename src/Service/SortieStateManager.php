@@ -37,8 +37,6 @@ class SortieStateManager
     {
         $currentEtat = $sortie->getEtat()?->getLibelle();
 
-        //dump([$sortie->getNom(), $currentEtat]);
-
         // Les sorties en création ou historisées ne sont jamais modifiées automatiquement.
         if (in_array($currentEtat, [Etat::CREEE, Etat::HISTORISEE], true)) {
             return false;
@@ -50,16 +48,6 @@ class SortieStateManager
         $dateHistorisation = $dateFin->modify('+1 month');
         $dateLimite = \DateTimeImmutable::createFromMutable($sortie->getDateLimiteInscription());
         $dateLimite = $dateLimite->setTime(23, 59, 59);
-
-        /*dump([
-            'Nom de la sortie' => $sortie->getNom(),
-            'DateNow' => $now,
-            'dateLimite' => $dateLimite,
-            'dateDebut' => $dateDebut,
-            'dateFin' => $dateFin,
-            'dateHistorisation' => $dateHistorisation,
-            'currentEtat' => $currentEtat,
-        ]);*/
 
         $nbParticipants = $sortie->getParticipants()->count();
         $nbMax = $sortie->getNbInscriptionsMax();

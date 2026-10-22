@@ -31,9 +31,6 @@ class MainController extends AbstractController
         SortieStateManager $stateManager
     ): Response
     {
-        /*// Connaître le fuseau horaire par défaut pour le débogage
-        dump(date_default_timezone_get());
-        dump(new \DateTimeImmutable());*/
         $user = $this->getUser();
 
         // Aucun filtre par défaut
