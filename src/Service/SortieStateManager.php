@@ -6,6 +6,7 @@ use App\Entity\Etat;
 use App\Entity\Sortie;
 use App\Repository\EtatRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Clock\ClockInterface;
 
 class SortieStateManager
 {
@@ -13,7 +14,9 @@ class SortieStateManager
 
     public function __construct(
         private readonly EtatRepository         $etatRepository,
-        private readonly EntityManagerInterface $em
+        private readonly EntityManagerInterface $em,
+        // Horloge injectée plutôt que new \DateTimeImmutable() : les tests peuvent la figer (MockClock).
+        private readonly ClockInterface         $clock
     )
     {
     }
@@ -42,7 +45,7 @@ class SortieStateManager
             return false;
         }
 
-        $now = new \DateTimeImmutable();
+        $now = $this->clock->now();
         $dateDebut = \DateTimeImmutable::createFromMutable($sortie->getDateHeureDebut());
         $dateFin = $dateDebut->modify(sprintf('+%d minutes', $sortie->getDuree()));
         $dateHistorisation = $dateFin->modify('+1 month');
