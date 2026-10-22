@@ -15,6 +15,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\PasswordStrength;
@@ -55,7 +56,9 @@ class ProfileType extends AbstractType
                 'type' => PasswordType::class,
                 'trim' => true, // <-- Évite les espaces parasites accidentels
                 'mapped' => false,
-                'required' => false,
+                // Obligatoire à la création d'un compte (option is_new, utilisée par
+                // l'administration) ; facultatif en modification : champ vide = inchangé.
+                'required' => $options['is_new'],
                 'first_options' => [
                     'label' => 'Mot de passe',
                 ],
@@ -63,19 +66,23 @@ class ProfileType extends AbstractType
                     'label' => 'Confirmation',
                 ],
                 'invalid_message' => 'Les mots de passe ne correspondent pas.',
-                'constraints' => [
-                    new Length([
-                        'min' => 8,
-                        'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères.',
-                    ]),
-                    //TODO: décommenter après les tests
-                    /*new PasswordStrength([
-                        'minScore' => PasswordStrength::STRENGTH_MEDIUM,
-                        'message' => 'Le mot de passe est trop simple. Utilisez une combinaison de majuscules, minuscules, chiffres et caractères spéciaux.',
-
-                    ]),
-                    */
-                ],
+                'constraints' => array_merge(
+                    $options['is_new']
+                        ? [new NotBlank(message: 'Le mot de passe est obligatoire pour un nouveau compte.')]
+                        : [],
+                    [
+                        new Length(
+                            min: 8,
+                            minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères.',
+                        ),
+                        // Robustesse évaluée par Symfony (longueur, variété des caractères) :
+                        // refuse les mots de passe faciles à deviner comme « azertyui ».
+                        new PasswordStrength(
+                            minScore: PasswordStrength::STRENGTH_MEDIUM,
+                            message: 'Le mot de passe est trop simple. Utilisez une combinaison de majuscules, minuscules, chiffres et caractères spéciaux.',
+                        ),
+                    ],
+                ),
             ])
             ->add('photoFile', FileType::class, [
                 'label' => 'Ma photo',
