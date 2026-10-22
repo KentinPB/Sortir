@@ -1,0 +1,20 @@
+{#
+    Bouton « S'inscrire » ou « Se désister » d'une sortie.
+
+    Paramètres :
+      - sortie : la sortie concernée
+      - action : 'inscrire' ou 'desister'
+
+    C'est un formulaire POST (et non un lien) : ces actions modifient des données,
+    elles ne doivent donc jamais pouvoir être déclenchées par une simple visite
+    de page (préchargement du navigateur, lien piégé). Le jeton CSRF prouve que
+    la demande vient bien de ce formulaire ; il est vérifié dans MainController.
+#}
+<form action="{{ path('sortie_' ~ action, {id: sortie.id}) }}" method="POST" class="d-inline">
+    <input type="hidden" name="_token" value="{{ csrf_token(action ~ sortie.id) }}">
+    {% if action == 'inscrire' %}
+        <button type="submit" class="btn btn-sm btn-outline-primary">S'inscrire</button>
+    {% else %}
+        <button type="submit" class="btn btn-sm btn-outline-secondary">Se désister</button>
+    {% endif %}
+</form>

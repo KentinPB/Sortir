@@ -85,10 +85,18 @@ class MainController extends AbstractController
     #[Route('/sortie/{id}/inscrire', name: 'sortie_inscrire', methods: ['POST'])]
     public function inscrire(
         Sortie                 $sortie,
+        Request                $request,
         EntityManagerInterface $em,
         SortieStateManager     $stateManager
     ): Response
     {
+        // Protection CSRF : le jeton est généré par le formulaire (_bouton_participation.html.twig).
+        // Sans lui, un autre site pourrait inscrire un utilisateur connecté à son insu.
+        if (!$this->isCsrfTokenValid('inscrire' . $sortie->getId(), $request->getPayload()->getString('_token'))) {
+            $this->addFlash('danger', 'Jeton de sécurité invalide, veuillez réessayer.');
+            return $this->redirectToRoute('accueil');
+        }
+
         // Réévaluation rapide de l'état avant traitement
         $stateManager->updateEtat($sortie);
         $em->flush();
@@ -114,10 +122,17 @@ class MainController extends AbstractController
     #[Route('/sortie/{id}/desister', name: 'sortie_desister', methods: ['POST'])]
     public function desister(
         Sortie                 $sortie,
+        Request                $request,
         EntityManagerInterface $em,
         SortieStateManager     $stateManager
     ): Response
     {
+        // Protection CSRF (même principe que pour l'inscription).
+        if (!$this->isCsrfTokenValid('desister' . $sortie->getId(), $request->getPayload()->getString('_token'))) {
+            $this->addFlash('danger', 'Jeton de sécurité invalide, veuillez réessayer.');
+            return $this->redirectToRoute('accueil');
+        }
+
         $stateManager->updateEtat($sortie);
         $em->flush();
 
