@@ -30,19 +30,19 @@ Application web développée avec **Symfony 7.4** permettant à des étudiants/p
 - **PHP** ≥ 8.4.15
 - **Symfony** 7.4 (Framework Bundle, Security Bundle, Doctrine Bundle, Messenger, Mailer, Twig, Asset Mapper…)
 - **Doctrine ORM** 3.x / **Doctrine Migrations**
-- **PostgreSQL** (voir `compose.yaml`) — la base peut être adaptée à MySQL/MariaDB si besoin
+- **MySQL / MariaDB** avec le moteur **InnoDB** (les migrations sont écrites pour ce SGBD)
 - **Bootstrap 5.3** (CSS/JS via CDN)
-- **Stimulus / Turbo** (Symfony UX)
+- **Turbo** (Symfony UX) et JavaScript natif (filtrage des lieux par ville)
 - **PHPUnit** 13 pour les tests
-- **Symfony Docker Compose** pour l'environnement de développement (base de données + Mailpit)
+
+> **Pourquoi InnoDB ?** Les premières tables avaient été créées avec le moteur MyISAM, qui ignore les clés étrangères et les transactions : les contraintes de relation ne s'appliquaient pas et certaines migrations échouaient. Une migration convertit les tables en InnoDB, et `config/packages/doctrine.yaml` impose désormais InnoDB et l'encodage `utf8mb4` pour toutes les nouvelles tables.
 
 ## Prérequis
 
-- PHP 8.4.15 ou supérieur, avec les extensions `ctype` et `iconv`
+- PHP 8.4.15 ou supérieur, avec les extensions `ctype`, `iconv`, `intl` et `pdo_mysql`
 - [Composer](https://getcomposer.org/)
-- [Symfony CLI](https://symfony.com/download) (recommandé)
-- Docker et Docker Compose (pour la base de données et Mailpit)
-- Node.js (facultatif, uniquement si vous ajoutez des dépendances JS via Asset Mapper/npm)
+- Un serveur **MySQL 8 ou MariaDB 10.11** local (Laragon, Wamp, XAMPP…) — ou Docker (facultatif, voir ci-dessous)
+- [Symfony CLI](https://symfony.com/download) (facultatif)
 
 ## Installation
 
@@ -61,17 +61,22 @@ Application web développée avec **Symfony 7.4** permettant à des étudiants/p
 
 3. **Configurer les variables d'environnement**
 
-   Copier le fichier `.env` en `.env.local` et adapter les valeurs si besoin (notamment `DATABASE_URL`, `MAILER_DSN`, `APP_SECRET`).
+   Le fichier `.env` (versionné) contient des valeurs par défaut **sans secret**. Créer un fichier `.env.local` (non versionné) pour vos valeurs, par exemple :
 
-   ```bash
-   cp .env .env.local
+   ```dotenv
+   DATABASE_URL="mysql://utilisateur:motdepasse@127.0.0.1:3306/sortir?serverVersion=10.11.2-MariaDB&charset=utf8mb4"
+   MAILER_DSN=smtp://127.0.0.1:1025
    ```
 
-4. **Démarrer les services Docker** (base de données PostgreSQL + Mailpit pour les emails)
+   En production, définir aussi `APP_ENV=prod` et un `APP_SECRET` propre dans `.env.local`.
+
+4. **(Facultatif) Docker** : `compose.yaml` fournit une base MariaDB et Mailpit.
 
    ```bash
    docker compose up -d
    ```
+
+   Avec Docker, utiliser `DATABASE_URL="mysql://root:root@127.0.0.1:3306/sortir?serverVersion=10.11.2-MariaDB&charset=utf8mb4"`.
 
 ## Base de données
 

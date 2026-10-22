@@ -1,22 +1,22 @@
 
+# Environnement Docker FACULTATIF : une base MariaDB (même moteur que les migrations)
+# et Mailpit pour lire les e-mails envoyés en développement.
+# Sans Docker, un serveur MySQL/MariaDB local (Laragon, Wamp, XAMPP) suffit.
 services:
 ###> doctrine/doctrine-bundle ###
   database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
+    image: mariadb:${MARIADB_VERSION:-10.11}
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-sortir}
+      # À changer : mot de passe de développement uniquement
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-root}
     healthcheck:
-      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       timeout: 5s
       retries: 5
       start_period: 60s
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
+      - database_data:/var/lib/mysql:rw
 ###< doctrine/doctrine-bundle ###
 
 volumes:
