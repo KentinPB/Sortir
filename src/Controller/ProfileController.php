@@ -56,7 +56,10 @@ final class ProfileController extends AbstractController
         // -----------------------------
 
             // Traite l'upload d'une nouvelle photo de profil.
-             $photoFile = $form->get('photoFile')->getData();
+            $photoFile = $form->get('photoFile')->getData();
+            // Nom de la photo actuelle, à supprimer du disque une fois la nouvelle enregistrée.
+            $anciennePhoto = $participant->getPhoto();
+            $photoRemplacee = false;
 
             if ($photoFile) {
 
@@ -78,6 +81,7 @@ final class ProfileController extends AbstractController
                         $newFilename
                     );
                     $participant->setPhoto($newFilename);
+                    $photoRemplacee = true;
                 } catch (FileException $e) {
                     // En cas d'échec, ne pas enregistrer de référence vers un fichier inexistant.
                     $this->addFlash(
@@ -85,11 +89,19 @@ final class ProfileController extends AbstractController
                         'Une erreur est survenue lors de l\'import de la photo.'
                     );
                 }
-                // TODO : supprimer l'ancienne photo après un remplacement (unlink()).
-
             }
 
             $entityManager->flush();
+
+            // Suppression de l'ancienne photo APRÈS l'enregistrement en base : si le flush
+            // échouait, le profil pointerait encore vers elle et elle doit donc exister.
+            // basename() empêche de sortir du dossier des photos (« ../../fichier »).
+            if ($photoRemplacee && $anciennePhoto) {
+                $cheminAnciennePhoto = $this->getParameter('photos_directory') . '/' . basename($anciennePhoto);
+                if (is_file($cheminAnciennePhoto)) {
+                    unlink($cheminAnciennePhoto);
+                }
+            }
 
             $this->addFlash(
                 'success',
