@@ -12,6 +12,7 @@ Application web développée avec **Symfony 7.4** permettant à des étudiants/p
 - [Lancer le projet](#lancer-le-projet)
 - [Tests](#tests)
 - [Comptes de démonstration](#comptes-de-démonstration)
+- [Sécurité](#sécurité)
 - [Structure du projet](#structure-du-projet)
 - [Cycle de vie d'une sortie](#cycle-de-vie-dune-sortie)
 
@@ -134,13 +135,25 @@ Les tests unitaires de `tests/Service/SortieStateManagerTest.php` vérifient le 
 
 Les fixtures créent plusieurs participants avec le mot de passe **`password123`**, par exemple :
 
-| Email                  | Pseudo    | Rôle          |
-|-------------------------|-----------|---------------|
-| jeannine@sortir.com      | Jeannine L.|Administrateur|
-| remi@sortir.com       | MarcB     | Utilisateur |
+| Email               | Pseudo      | Rôle           |
+|---------------------|-------------|----------------|
+| jeannine@sortir.com | Jeannine L. | Administrateur |
+| marc@sortir.com     | MarcB       | Administrateur |
+| remi@sortir.com     | Rémi S.     | Utilisateur    |
 
 Consultez `src/DataFixtures/AppFixtures.php` pour la liste complète.
 
+> `password123` est un mot de passe de démonstration créé directement par les fixtures. Il ne respecte pas les règles appliquées par le formulaire de profil (voir [Sécurité](#sécurité)) : un nouveau mot de passe saisi par un utilisateur devra être plus robuste.
+
+## Sécurité
+
+- **Jetons CSRF** sur toutes les actions qui modifient des données (inscription, désistement, suppression, formulaires) : un autre site ne peut pas déclencher ces actions à l'insu d'un utilisateur connecté.
+- **Contrôles côté serveur** : l'état de la sortie et les places restantes sont revérifiés au moment de l'inscription.
+- **Mots de passe** hachés par Symfony ; au moins 8 caractères et robustesse minimale (`PasswordStrength`) lors d'un changement.
+- **Unicité** de l'e-mail et du pseudo garantie à la fois par le formulaire (`UniqueEntity`) et par un index unique en base.
+- **Comptes désactivés** bloqués à la connexion (`UserChecker`).
+- **Photos de profil** : type et taille contrôlés (JPEG/PNG, 2 Mo), nom de fichier généré par l'application, ancienne photo supprimée.
+- **Dépendances** vérifiées avec `composer audit`.
 
 ## Structure du projet
 
